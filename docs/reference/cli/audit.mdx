@@ -1,0 +1,170 @@
+# strata audit
+
+Run validation checks on your project.
+
+## Synopsis
+
+```bash
+strata audit [SUBCOMMAND]
+```
+
+Alias: `a`
+
+Default: `all` (runs all checks)
+
+## Description
+
+Validates your Strata project configuration and models. Use before deploying to catch issues early.
+
+## Subcommands
+
+### all (Default)
+
+Run all audit checks.
+
+```bash
+strata audit
+strata audit all
+```
+
+**Checks:**
+1. YAML syntax
+2. Model definitions
+3. Datasource connections
+
+### syntax
+
+Check YAML syntax of configuration files.
+
+```bash
+strata audit syntax
+```
+
+**Validates:**
+- `project.yml`
+- `datasources.yml`
+- All `models/**/*.yml` files
+- All `migrations/*.yml` files
+- All `tests/*.yml` files
+
+**Reports:**
+- Syntax errors
+- Invalid YAML structure
+
+### models
+
+Validate model definitions and schema structure.
+
+```bash
+strata audit models
+```
+
+**Validates:**
+- Required keys present
+- Field structure correct
+- Relationship definitions valid
+- Import resolution
+- Circular import detection
+
+**Checks:**
+- Table models have required fields (`name`, `physical_name`, `fields`, `datasource`)
+- Relationship models have required fields (`datasource`, `left`, `right`, `sql`, `cardinality`)
+- Field definitions are valid
+- Cardinality values are valid (`one_to_one`, `one_to_many`, `many_to_one`)
+
+### connections
+
+Test all datasource connections.
+
+```bash
+strata audit connections
+```
+
+**Tests:**
+- Connection parameters
+- Authentication
+- Database accessibility
+
+**For each datasource:**
+- Attempts connection
+- Reports success/failure
+- Shows error messages if failed
+
+## Examples
+
+### Run All Checks
+
+```bash
+strata audit
+```
+
+### Check Syntax Only
+
+```bash
+strata audit syntax
+```
+
+### Validate Models
+
+```bash
+strata audit models
+```
+
+### Test Connections
+
+```bash
+strata audit connections
+```
+
+## Output
+
+### Success
+
+```
+✓ Checking YAML syntax
+✓ Checking model definitions
+✓ Checking data source connections
+```
+
+### Failures
+
+```
+✖ models/sales/tbl.orders.yml: Missing required field 'datasource'
+✖ datasources.yml: Invalid YAML syntax at line 5
+✖ warehouse: Connection failed - authentication error
+```
+
+## Exit Codes
+
+- `0` - All checks passed
+- `1` - One or more checks failed
+
+## Best Practices
+
+1. **Run before deploying** - Catch issues early
+2. **Fix errors immediately** - Don't deploy with failures
+3. **Use in CI/CD** - Automate validation
+4. **Check regularly** - Run audits during development
+
+## Integration
+
+### Pre-Deployment
+
+Audits run automatically during deployment (unless `--skip-audit`):
+
+```bash
+strata deploy  # Runs audits first
+```
+
+### CI/CD
+
+```yaml
+- name: Audit
+  run: strata audit
+```
+
+## Next Steps
+
+- [Learn about deployment](/docs/guides/deployment)
+- [Read about testing](/docs/guides/testing)
+- [Fix common errors](/docs/guides/deployment#troubleshooting)

@@ -1,0 +1,210 @@
+# strata datasource
+
+Manage datasource connections.
+
+## Synopsis
+
+```bash
+strata datasource [SUBCOMMAND] [OPTIONS]
+```
+
+Alias: `ds`
+
+## Subcommands
+
+### adapters
+
+List supported data warehouse adapters.
+
+```bash
+strata datasource adapters
+```
+
+### list
+
+List configured datasources with keys and display names.
+
+```bash
+strata datasource list
+```
+
+**Output:**
+```
+warehouse => Production Warehouse
+analytics => Analytics Database
+```
+
+### add [ADAPTER]
+
+Add a new datasource interactively.
+
+```bash
+strata datasource add postgres
+strata datasource add snowflake
+```
+
+**Process:**
+1. Prompts for datasource key (unique identifier)
+2. Prompts for display name
+3. Collects adapter-specific configuration
+4. Optionally collects credentials
+5. Adds to `datasources.yml`
+
+**Supported adapters:**
+- `postgres` - PostgreSQL
+- `snowflake` - Snowflake
+- `mysql` - MySQL
+- `sqlserver` - SQL Server
+- `athena` - AWS Athena
+- `trino` - Trino/Presto
+- `duckdb` - DuckDB
+- `druid` - Apache Druid
+
+### auth DS_KEY
+
+Set credentials for a datasource.
+
+```bash
+strata datasource auth warehouse
+```
+
+**Options:**
+- `-r, --remote` - Store credentials on remote server
+
+**Process:**
+1. Prompts for credentials (username, password, API keys, etc.)
+2. Stores in `.strata` file (local) or server (remote)
+3. Credentials are never committed to git
+
+### test DS_KEY
+
+Test connection to a datasource.
+
+```bash
+strata datasource test warehouse
+```
+
+**Validates:**
+- Connection parameters
+- Authentication
+- Database accessibility
+
+### tables [DS_KEY]
+
+List tables in a datasource.
+
+```bash
+strata datasource tables warehouse
+```
+
+**Options:**
+- `-p, --pattern PATTERN` - Filter by regex pattern
+- `-c, --catalog CATALOG` - Override catalog
+- `-s, --schema SCHEMA` - Override schema
+
+**Interactive:**
+- Search and filter tables
+- Select table for model creation
+
+### meta DS_KEY TABLE_NAME
+
+Show schema/structure of a specific table.
+
+```bash
+strata datasource meta warehouse orders
+```
+
+**Options:**
+- `-c, --catalog` - Override catalog
+- `-s, --schema` - Override schema
+
+**Output:**
+- Column names
+- Data types
+- Nullable status
+
+### exec DS_KEY
+
+Execute SQL queries on a datasource.
+
+```bash
+strata datasource exec warehouse -q "SELECT * FROM orders LIMIT 10"
+```
+
+**Options:**
+- `-q, --query QUERY` - Inline SQL query
+- `-f, --file PATH` - SQL query from file
+
+## Examples
+
+### Add PostgreSQL Datasource
+
+```bash
+strata datasource add postgres
+# Prompts for:
+# - Datasource key: warehouse
+# - Display name: Production Warehouse
+# - Host: db.example.com
+# - Port: 5432
+# - Database: analytics
+# - Schema: public
+# - Username: user
+# - Password: (prompted, stored in .strata)
+```
+
+### Set Credentials
+
+```bash
+strata datasource auth warehouse
+# Prompts for username and password
+# Stores in .strata file
+```
+
+### Test Connection
+
+```bash
+strata datasource test warehouse
+# Tests connection and reports success/failure
+```
+
+### List Tables
+
+```bash
+strata datasource tables warehouse
+# Lists all tables with interactive search
+```
+
+## Configuration Files
+
+### datasources.yml
+
+Datasource definitions (committed to git):
+
+```yaml
+warehouse:
+  adapter: postgres
+  name: Production Warehouse
+  tier: hot
+  host: db.example.com
+  port: 5432
+  database: analytics
+  schema: public
+```
+
+### .strata
+
+Credentials (gitignored):
+
+```yaml
+api_key: your_api_key
+
+warehouse:
+  username: user
+  password: secret
+```
+
+## Next Steps
+
+- [Create tables](/docs/reference/cli/create#table)
+- [Test connections](/docs/reference/cli/datasource#test)
+- [Read adapter documentation](/docs/reference/adapters)

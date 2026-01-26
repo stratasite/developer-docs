@@ -1,0 +1,60 @@
+# strata table
+
+Manage semantic tables.
+
+## Synopsis
+
+```bash
+strata table list
+```
+
+Aliases: `t`, `tbl`
+
+## Subcommands
+
+### list
+
+List all semantic table models in your project.
+
+```bash
+strata table list
+```
+
+**Output:**
+Lists all table files found in `models/` directory:
+- Table name
+- File path
+- Datasource
+
+**Example:**
+```
+Tables:
+  Store Sales (models/store/tbl.store_sales.yml) - tpcds
+  Store (models/store/tbl.store.yml) - tpcds
+  Customer (models/common/tbl.customer.yml) - tpcds
+```
+
+## Examples
+
+### List All Tables
+
+```bash
+strata table list
+```
+
+### Using Aliases
+
+```bash
+strata t list
+strata tbl list
+```
+
+## Related Commands
+
+- [create table](/docs/reference/cli/create#table) - Create new table models
+- [datasource tables](/docs/reference/cli/datasource#tables) - List database tables
+
+## Next Steps
+
+- [Create tables](/docs/reference/cli/create#table)
+- [Learn about tables](/docs/semantic-model/tables)

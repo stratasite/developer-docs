@@ -1,0 +1,141 @@
+# Quickstart
+
+Get your first Strata semantic model up and running in 5 minutes.
+
+## Prerequisites
+
+- Ruby 3.4.4 or higher installed
+- Access to a database (PostgreSQL, MySQL, Snowflake, etc.)
+- Strata CLI installed ([see installation guide](/docs/getting-started/installation))
+
+## Step 1: Initialize a Project
+
+Create a new Strata project:
+
+```bash
+strata init my-first-project
+```
+
+This creates a new directory with the following structure:
+
+```
+my-first-project/
+├── project.yml          # Project configuration
+├── datasources.yml      # Datasource definitions
+├── models/              # Semantic model files
+├── migrations/          # Migration files
+└── tests/               # Test definitions
+```
+
+## Step 2: Add a Datasource
+
+Add your first datasource connection:
+
+```bash
+cd my-first-project
+strata datasource add postgres
+```
+
+The CLI will prompt you for:
+- Datasource key (identifier)
+- Display name
+- Connection details (host, port, database, etc.)
+- Credentials (stored securely in `.strata` file)
+
+## Step 3: Create Your First Table
+
+Generate a semantic table model from an existing database table:
+
+```bash
+strata create table sales/orders
+```
+
+This command:
+1. Connects to your datasource
+2. Fetches table metadata
+3. Uses AI to suggest field definitions (if configured)
+4. Opens an interactive editor to refine fields
+5. Generates `models/sales/tbl.orders.yml`
+
+## Step 4: Define Relationships
+
+Create a relationship file to join tables:
+
+```bash
+strata create relation sales/orders
+```
+
+This creates `models/sales/rel.orders.yml` where you define joins between tables.
+
+## Step 5: Deploy
+
+Deploy your semantic model to a Strata server:
+
+```bash
+strata deploy
+```
+
+This validates your model and uploads it to the Strata server for use in analytics.
+
+## Complete Example
+
+Here's a minimal working example:
+
+**project.yml:**
+```yaml
+name: My First Project
+description: Getting started with Strata
+server: http://localhost:3000
+production_branch: main
+```
+
+**datasources.yml:**
+```yaml
+my_db:
+  adapter: postgres
+  name: My Database
+  host: localhost
+  port: 5432
+  database: mydb
+  schema: public
+```
+
+**models/sales/tbl.orders.yml:**
+```yaml
+name: Orders
+physical_name: orders
+datasource: my_db
+cost: 100
+
+fields:
+  - type: dimension
+    name: Order ID
+    data_type: integer
+    expression:
+      primary_key: true
+      sql: order_id
+
+  - type: measure
+    name: Total Revenue
+    data_type: decimal
+    expression:
+      sql: sum(amount)
+```
+
+**models/sales/rel.orders.yml:**
+```yaml
+datasource: my_db
+
+orders_customers:
+  left: Orders
+  right: Customers
+  sql: left.customer_id = right.id
+  cardinality: many_to_one
+```
+
+## Next Steps
+
+- Learn about [core concepts](/docs/getting-started/concepts)
+- Read the [creating tables guide](/docs/guides/creating-tables)
+- Explore [field types and expressions](/docs/guides/fields-and-types)
+- Check out the [TPC-DS tutorial](/docs/examples/tpcds-tutorial) for a complete example

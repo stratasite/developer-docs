@@ -1,0 +1,179 @@
+# strata create
+
+Create semantic models (tables, relations, migrations).
+
+## Synopsis
+
+```bash
+strata create [SUBCOMMAND] [OPTIONS]
+```
+
+## Subcommands
+
+### table [TABLE_PATH]
+
+Create a semantic table model from a datasource table.
+
+```bash
+strata create table orders
+strata create table sales/orders
+strata create table contact/dse.call_center_d
+```
+
+**Options:**
+- `-d, --datasource DS_KEY` - Specify datasource
+
+**Process:**
+1. Checks table existence in datasource
+2. Fetches column metadata
+3. Uses AI to suggest field definitions (if configured)
+4. Opens interactive field editor
+5. Generates `models/<PATH>/tbl.<name>.yml`
+
+**TABLE_PATH formats:**
+- Simple: `orders` → `models/tbl.orders.yml`
+- Nested: `sales/orders` → `models/sales/tbl.orders.yml`
+- With schema: `contact/dse.call_center_d` → `models/contact/tbl.dse.call_center_d.yml`
+
+**Interactive mode:**
+If no TABLE_PATH provided, prompts to search and select a table.
+
+### relation RELATION_PATH
+
+Create a relationship (join) definition file.
+
+```bash
+strata create relation sales/orders
+```
+
+**Options:**
+- `-d, --datasource DS_KEY` - Specify datasource
+
+**Creates:**
+- `models/<PATH>/rel.<name>.yml`
+
+**Example:**
+```bash
+strata create relation sales/orders
+# Creates: models/sales/rel.orders.yml
+```
+
+### migration rename
+
+Create a migration file to rename an entity.
+
+```bash
+strata create migration rename \
+  --entity dimension \
+  --from "Old Name" \
+  --to "New Name"
+```
+
+**Options:**
+- `-e, --entity TYPE` - Entity type: `dimension`, `measure`, `table`, `datasource`
+- `-f, --from NAME` - Current entity name
+- `-t, --to NAME` - New entity name
+
+**Creates:**
+- `migrations/YYYYMMDDHHMMSS_rename_<entity>_<from>_to_<to>.yml`
+
+**Example:**
+```bash
+strata create migration rename \
+  --entity dimension \
+  --from "Store Name" \
+  --to "Store Location Name"
+```
+
+### migration swap
+
+Create a migration file to swap entity references.
+
+```bash
+strata create migration swap \
+  --entity measure \
+  --from "Old Revenue" \
+  --to "New Revenue"
+```
+
+**Options:**
+- `-e, --entity TYPE` - Entity type: `dimension`, `measure`, `table` (not `datasource`)
+- `-f, --from NAME` - Source entity name
+- `-t, --to NAME` - Target entity name
+
+**Creates:**
+- `migrations/YYYYMMDDHHMMSS_swap_<entity>_<from>_to_<to>.yml`
+
+**Example:**
+```bash
+strata create migration swap \
+  --entity measure \
+  --from "Old Revenue" \
+  --to "New Revenue"
+```
+
+## Examples
+
+### Create Table Model
+
+```bash
+# Simple table
+strata create table orders
+
+# Nested path
+strata create table sales/orders
+
+# With schema
+strata create table contact/dse.call_center_d
+
+# Specify datasource
+strata create table orders -d warehouse
+```
+
+### Create Relationship
+
+```bash
+strata create relation sales/orders
+# Creates models/sales/rel.orders.yml
+```
+
+### Create Rename Migration
+
+```bash
+strata create migration rename \
+  --entity dimension \
+  --from "Customer Name" \
+  --to "Customer Full Name"
+```
+
+### Create Swap Migration
+
+```bash
+strata create migration swap \
+  --entity measure \
+  --from "Old Revenue" \
+  --to "New Revenue"
+```
+
+## Interactive Features
+
+### Table Creation
+
+When creating tables:
+- **AI field generation** - Suggests field definitions
+- **Interactive editor** - Review and edit fields
+- **Field validation** - Ensures correct syntax
+
+### Field Editor
+
+- `e` - Edit field
+- `a` - Add new field
+- `d` - Delete field
+- `r` - Regenerate with AI
+- `s` - Save and continue
+
+## Next Steps
+
+- [Edit generated files](/docs/guides/creating-tables)
+- [Define relationships](/docs/guides/relationships)
+- [Create migrations](/docs/guides/migrations)
