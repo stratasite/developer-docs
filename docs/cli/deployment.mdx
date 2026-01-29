@@ -16,7 +16,7 @@ After completing this guide, you will be able to:
 - Strata project initialized
 - Semantic models defined
 - Strata server URL configured in `project.yml`
-- API key configured (in `.strata` file)
+- API key configured (in `.strata` file) — get it from your Strata web app (e.g. **Settings → API Keys**) or from your Strata administrator
 - Git repository initialized (for version tracking)
 
 ## Basic Deployment
@@ -61,6 +61,8 @@ strata deploy --force
 ```
 
 ### 3. Archive Creation
+
+Before building the archive, the CLI refreshes external imports (if any) so the deployment includes the latest imported content.
 
 The CLI creates an archive containing:
 - Model files (`models/**/*.yml`)
@@ -171,6 +173,8 @@ project_id: 123  # Auto-populated after first deployment
 
 ### .strata (Local Secrets)
 
+Store your Strata API key and other secrets in `.strata` (gitignored). Get the API key from your Strata web app: open your project, go to **Settings → API Keys**, and create or copy a key. The CLI uses it when you run `strata deploy`.
+
 ```yaml
 api_key: your_api_key_here
 
@@ -231,10 +235,10 @@ environments:
 
 ## CI/CD Integration
 
-For automated deployments, see the [CI/CD guide](/docs/guides/ci-cd).
+For automated deployments, see the [CI/CD guide](/docs/cli/ci-cd).
 
 ## Next Steps
 
-- Learn about [CI/CD workflows](/docs/guides/ci-cd)
-- Read about [testing](/docs/guides/testing)
-- Explore [audit commands](/docs/cli/audit)
+- Learn about [CI/CD workflows](/docs/cli/ci-cd)
+- Read about [testing](/docs/cli/testing)
+- Explore [audit commands](/docs/cli/auditing)

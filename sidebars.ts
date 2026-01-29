@@ -5,66 +5,58 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
  */
 const sidebars: SidebarsConfig = {
   docsSidebar: [
+    // 1. Installation and Setup (highest priority)
     {
       type: 'category',
       label: 'Getting Started',
       link: { type: 'doc', id: 'getting-started/index' },
       items: [
         'getting-started/installation',
-        'getting-started/quickstart',
         'getting-started/concepts',
+        'getting-started/quickstart',
       ],
     },
+    // 2. CLI (guide-style pages)
     {
       type: 'category',
       label: 'CLI',
       link: { type: 'doc', id: 'cli/index' },
       items: [
-        'cli/datasource',
-        'cli/init',
-        'cli/create',
-        'cli/table',
-        'cli/deploy',
+        'cli/projects',
+        'cli/datasources',
+        'cli/tables',
+        'cli/relationships',
+        'cli/migrations',
+        'cli/tests',
         'cli/audit',
-        {
-          type: 'category',
-          label: 'Adapters',
-          link: { type: 'doc', id: 'cli/adapters/index' },
-          items: [
-            'cli/adapters/postgres',
-            'cli/adapters/snowflake',
-            'cli/adapters/mysql',
-            'cli/adapters/sqlserver',
-            'cli/adapters/athena',
-            'cli/adapters/trino',
-            'cli/adapters/duckdb',
-            'cli/adapters/druid',
-          ],
-        },
+        'cli/deployment',
+        'cli/ci-cd',
       ],
     },
-    {
-      type: 'category',
-      label: 'Guides',
-      link: { type: 'doc', id: 'guides/index' },
-      items: [
-        'guides/creating-tables',
-        'guides/fields-and-types',
-        'guides/expressions',
-        'guides/relationships',
-        'guides/migrations',
-        'guides/testing',
-        'guides/deployment',
-        'guides/ci-cd',
-      ],
-    },
+    // 3. Semantic Model Reference (includes datasources config & tiers)
     {
       type: 'category',
       label: 'Semantic Model',
       link: { type: 'doc', id: 'semantic-model/index' },
       items: [
         'semantic-model/datasources',
+        {
+          type: 'category',
+          label: 'Adapters',
+          link: { type: 'doc', id: 'semantic-model/adapters/index' },
+          items: [
+            'semantic-model/adapters/postgres',
+            'semantic-model/adapters/snowflake',
+            'semantic-model/adapters/mysql',
+            'semantic-model/adapters/sqlserver',
+            'semantic-model/adapters/athena',
+            'semantic-model/adapters/trino',
+            'semantic-model/adapters/duckdb',
+            'semantic-model/adapters/druid',
+          ],
+        },
         'semantic-model/tables',
+        'semantic-model/fields-and-types',
         {
           type: 'category',
           label: 'Fields',
@@ -89,9 +81,10 @@ const sidebars: SidebarsConfig = {
             'semantic-model/fields/formatters',
           ],
         },
+        'semantic-model/expressions',
         {
           type: 'category',
-          label: 'Expressions',
+          label: 'Expressions Reference',
           items: [
             'semantic-model/expressions/sql',
             'semantic-model/expressions/lookups',
@@ -108,28 +101,28 @@ const sidebars: SidebarsConfig = {
           ],
         },
         'semantic-model/imports',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Advanced',
-      link: { type: 'doc', id: 'advanced/index' },
-      items: [
-        'advanced/extended-blending-groups',
-        'advanced/exclusions',
-        'advanced/inclusions',
-        'advanced/partitions',
-        'advanced/cost-optimization',
         {
           type: 'category',
-          label: 'Decorators',
+          label: 'Advanced',
+          link: { type: 'doc', id: 'advanced/index' },
           items: [
-            'advanced/decorators/temporal',
-            'advanced/decorators/window',
-            'advanced/decorators/contribution',
+            'advanced/extended-blending-groups',
+            'advanced/exclusions',
+            'advanced/inclusions',
+            'advanced/partitions',
+            'advanced/cost-optimization',
+            {
+              type: 'category',
+              label: 'Decorators',
+              items: [
+                'advanced/decorators/temporal',
+                'advanced/decorators/window',
+                'advanced/decorators/contribution',
+              ],
+            },
+            'advanced/multi-datasource',
           ],
         },
-        'advanced/multi-datasource',
       ],
     },
     {

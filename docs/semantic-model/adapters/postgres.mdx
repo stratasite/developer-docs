@@ -1,23 +1,24 @@
-# MySQL Adapter
+# PostgreSQL Adapter
 
-Connect to MySQL databases.
+Connect to PostgreSQL databases.
 
 ## Configuration
 
 ```yaml
-mysql_db:
-  adapter: mysql
-  name: MySQL Database
-  tier: warm
+warehouse:
+  adapter: postgres
+  name: Production Warehouse
+  tier: hot
   query_timeout: 3600
   
   # Required
   host: db.example.com
   database: analytics
-  username: root
+  username: postgres
   
   # Optional
-  port: 3306              # Default: 3306
+  port: 5432              # Default: 5432
+  schema: public          # Default: public
   ssl: false              # Default: false
   
   # Credentials (set via strata datasource auth)
@@ -26,29 +27,31 @@ mysql_db:
 
 ## Required Fields
 
-- **host** - MySQL server hostname or IP (use `127.0.0.1` for local Docker)
+- **host** - PostgreSQL server hostname or IP
 - **database** - Database name
 - **username** - Username for connection
 
 ## Optional Fields
 
-- **port** - Port number (default: `3306`)
+- **port** - Port number (default: `5432`)
+- **schema** - Schema name (default: `public`)
 - **ssl** - Enable SSL (default: `false`)
 - **password** - Set via `strata datasource auth`
 
 ## Example
 
 ```yaml
-mysql_db:
-  adapter: mysql
-  name: MySQL Database
-  tier: warm
+warehouse:
+  adapter: postgres
+  name: Production Warehouse
+  tier: hot
   query_timeout: 3600
-  host: 127.0.0.1
-  port: 3306
+  host: db.example.com
+  port: 5432
   database: analytics
-  username: root
-  ssl: false
+  schema: public
+  ssl: true
+  username: strata_user
 ```
 
 ## Authentication
@@ -56,7 +59,7 @@ mysql_db:
 Set credentials securely:
 
 ```bash
-strata datasource auth mysql_db
+strata datasource auth warehouse
 ```
 
 ## SSL Configuration
@@ -67,11 +70,11 @@ Enable SSL for secure connections:
 ssl: true
 ```
 
-For advanced SSL options:
+For advanced SSL options, use `extra_connection_params`:
 
 ```yaml
 extra_connection_params:
-  ssl_mode: REQUIRED
+  sslmode: require
   connect_timeout: 10
 ```
 
@@ -80,8 +83,8 @@ extra_connection_params:
 1. **Use SSL in production** - Encrypt connections
 2. **Set appropriate tier** - Match performance characteristics
 3. **Use connection pooling** - Handled automatically
+4. **Set timeouts** - Prevent long-running queries
 
 ## Next Steps
 
-- [datasource add](/docs/cli/datasource#add-adapter)
-- [datasource test](/docs/cli/datasource#test-ds_key)
+- [Managing Datasources](/docs/cli/datasources) - add and test

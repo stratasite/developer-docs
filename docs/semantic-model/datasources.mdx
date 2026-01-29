@@ -10,7 +10,7 @@ Datasources connect Strata to your databases. They define:
 - Authentication credentials
 - **Tier** (hot, warm, cold) — influences query routing and performance
 
-For CLI commands to add, test, and manage datasources, see [datasource](/docs/cli/datasource).
+For CLI commands to add, test, and manage datasources, see [Managing Datasources](/docs/cli/datasources).
 
 ## Tier Configuration
 
@@ -120,14 +120,14 @@ Verifies connection parameters, authentication, and database accessibility.
 
 ## Supported Adapters
 
-1. **PostgreSQL** — [postgres](/docs/cli/adapters/postgres)
-2. **Snowflake** — [snowflake](/docs/cli/adapters/snowflake)
-3. **MySQL** — [mysql](/docs/cli/adapters/mysql)
-4. **SQL Server** — [sqlserver](/docs/cli/adapters/sqlserver)
-5. **Athena** — [athena](/docs/cli/adapters/athena)
-6. **Trino** — [trino](/docs/cli/adapters/trino)
-7. **DuckDB** — [duckdb](/docs/cli/adapters/duckdb)
-8. **Druid** — [druid](/docs/cli/adapters/druid)
+1. **PostgreSQL** — [postgres](/docs/semantic-model/adapters/postgres)
+2. **Snowflake** — [snowflake](/docs/semantic-model/adapters/snowflake)
+3. **MySQL** — [mysql](/docs/semantic-model/adapters/mysql)
+4. **SQL Server** — [sqlserver](/docs/semantic-model/adapters/sqlserver)
+5. **Athena** — [athena](/docs/semantic-model/adapters/athena)
+6. **Trino** — [trino](/docs/semantic-model/adapters/trino)
+7. **DuckDB** — [duckdb](/docs/semantic-model/adapters/duckdb)
+8. **Druid** — [druid](/docs/semantic-model/adapters/druid)
 
 ## Query Timeout
 
@@ -156,7 +156,7 @@ warehouse:
 
 ## Next Steps
 
-- [datasource](/docs/cli/datasource) — CLI commands
-- [Adapters](/docs/cli/adapters) — Adapter-specific configuration
+- [Managing Datasources](/docs/cli/datasources) — CLI commands
+- [Adapters](/docs/semantic-model/adapters) — Adapter-specific configuration
 - [multi-datasource](/docs/advanced/multi-datasource) — Cross-datasource queries
 - [cost-optimization](/docs/advanced/cost-optimization)
