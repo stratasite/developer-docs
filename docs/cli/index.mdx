@@ -8,7 +8,7 @@ The Strata CLI provides commands for managing semantic models, datasources, and 
 
 ## Behind the scenes
 
-The CLI works on the same YAML that the semantic model reference describes. It manages **semantic model** assets (datasources, tables, relationships, migrations) and deploys them to a Strata server. To understand the concepts (semantic layer, tables, relationships, datasources), see [Core Concepts](/docs/getting-started/concepts) and [Semantic Model](/docs/semantic-model/index).
+The CLI works on the same YAML that the semantic model reference describes. It manages **semantic model** assets (datasources, tables, relationships, migrations) and deploys them to a Strata server. To understand the concepts (semantic layer, tables, relationships, datasources), see [Core Concepts](/docs/getting-started/concepts) and [Semantic Model](/docs/semantic-model/).
 
 ## Commands
 
@@ -40,7 +40,7 @@ A **datasource** is a configured connection to a database used by the semantic m
 
 | Command | Description | Read more |
 |---------|-------------|-----------|
-| **create table** | Create a semantic table model | [Creating Tables](/docs/cli/creating-tables) → [Tables](/docs/semantic-model/tables) |
+| **create table** | Create a semantic table model | [Creating Tables](/docs/cli/tables) → [Tables](/docs/semantic-model/tables) |
 | **create relation** | Create a relationship file | [Relationships](/docs/cli/relationships) → [Relationships](/docs/semantic-model/relationships/cardinality) |
 | **create migration rename** | Create rename migration | [Migrations](/docs/cli/migrations) |
 | **create migration swap** | Create swap migration | [Migrations](/docs/cli/migrations) |
@@ -49,7 +49,7 @@ A **datasource** is a configured connection to a database used by the semantic m
 
 | Command | Description | Read more |
 |---------|-------------|-----------|
-| **table list** | List semantic table models | [Creating Tables](/docs/cli/creating-tables) → [Tables](/docs/semantic-model/tables) |
+| **table list** | List semantic table models | [Creating Tables](/docs/cli/tables) → [Tables](/docs/semantic-model/tables) |
 
 ### Deployment
 
@@ -62,7 +62,7 @@ A **datasource** is a configured connection to a database used by the semantic m
 
 | Command | Description | Action |
 |---------|-------------|-----------|
-| **audit** | Run validation checks (syntax, models, connections) | [Read more](/docs/cli/auditing) |
+| **audit** | Run validation checks (syntax, models, connections) | [Read more](/docs/cli/audit) |
 
 ### Utilities
 
@@ -79,6 +79,6 @@ strata COMMAND SUBCOMMAND --help
 
 - [Projects](/docs/cli/projects) - Initialize or link a project
 - [Managing Datasources](/docs/cli/datasources) - Configure datasources
-- [Creating Tables](/docs/cli/creating-tables) - Create tables and relationships
+- [Creating Tables](/docs/cli/tables) - Create tables and relationships
 - [Deployment](/docs/cli/deployment) - Deploy to server
-- [Auditing](/docs/cli/auditing) - Validate before deploy
+- [Auditing](/docs/cli/audit) - Validate before deploy
