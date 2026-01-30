@@ -29,6 +29,9 @@ jobs:
         run: npm ci
 
       - name: Build website
+        env:
+          # Required when deployed to a subpath (e.g. GitHub Pages at /developer-docs/)
+          DOCS_BASE_URL: /developer-docs/
         run: npm run build
 
       - name: Setup Pages

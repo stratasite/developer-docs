@@ -2,9 +2,21 @@ import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import generateDocsApiPlugin from './src/plugins/generate-docs-api';
-import {siteUrls} from './src/site-urls';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
+
+// URL config: NODE_ENV from npm run start/build; DOCS_ENV overrides; DOCS_BASE_URL for subpath (e.g. GitHub Pages /developer-docs/)
+const isProd = process.env.NODE_ENV === 'production';
+const envOverride = process.env.DOCS_ENV;
+const baseUrlEnv = process.env.DOCS_BASE_URL;
+const isProduction = envOverride === 'production' || (envOverride !== 'development' && isProd);
+const baseUrl =
+  baseUrlEnv && baseUrlEnv.startsWith('/') && baseUrlEnv.endsWith('/')
+    ? baseUrlEnv
+    : '/';
+const siteUrl = isProduction ? 'https://strata.do' : 'http://localhost:3000';
+const githubUrl = 'https://github.com/your-username/strata-docs';
+const logoPath = 'img/logo.svg';
 
 const config: Config = {
   title: 'Strata - Developer Docs',
@@ -16,9 +28,8 @@ const config: Config = {
     v4: true, // Improve compatibility with the upcoming Docusaurus v4
   },
 
-  // URLs: see src/site-urls.ts for dev vs prod (DOCS_ENV or NODE_ENV)
-  url: siteUrls.site,
-  baseUrl: siteUrls.baseUrl,
+  url: siteUrl,
+  baseUrl,
 
   // GitHub pages deployment config (when using *.github.io; override if using custom domain)
   // organizationName: 'your-username',
@@ -68,8 +79,8 @@ const config: Config = {
       title: 'Strata Developer Docs',
       logo: {
         alt: 'Strata Developer Docs',
-        src: siteUrls.logoPath,
-        href: siteUrls.baseUrl,
+        src: logoPath,
+        href: baseUrl,
         width: 32,
         height: 32,
       },
@@ -81,7 +92,7 @@ const config: Config = {
           label: 'Getting Started',
         },
         {
-          href: siteUrls.github,
+          href: githubUrl,
           label: 'GitHub',
           position: 'right',
         },
