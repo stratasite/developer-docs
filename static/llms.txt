@@ -17,9 +17,9 @@ Strata is a semantic layer platform that transforms raw database tables into bus
 - [Relationships](/docs/guides/relationships): Configure joins between tables
 - [Datasources](/docs/semantic-model/datasources): Configure database connections and tiers
 - [Migrations](/docs/guides/migrations): Rename and swap operations
-- [Testing](/docs/guides/testing): Validate your semantic model
+- [Testing](/docs/cli/tests): Validate your semantic model
 - [Deployment](/docs/guides/deployment): Deploy to Strata server
-- [CI/CD](/docs/guides/ci-cd): Automated deployment workflows
+- [CI/CD](/docs/cli/ci-cd): Automated deployment workflows
 
 ## Semantic Model
 - [Semantic Model Overview](/docs/semantic-model): Deep dive into model capabilities
