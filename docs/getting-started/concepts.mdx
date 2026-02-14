@@ -92,6 +92,8 @@ When you define a measure called "Total Revenue", that name cannot be used anywh
 - **Consistent analytics**: Everyone uses the same metric definitions organization-wide
 - **AI-friendly**: LLMs can understand your model without disambiguation
 
+Because names are globally unique, you never need extra type prefixes (like “dimension vs measure”) when writing expressions — `[Total Revenue]` always refers to the single field with that name.
+
 **Trade-offs:**
 - You cannot have `orders.revenue` and `subscriptions.revenue` — you must use distinct names like `order_revenue` and `subscription_revenue`
 - Naming becomes more important and requires upfront planning
@@ -115,6 +117,25 @@ If you need many-to-many relationships (e.g., Users ↔ Roles), create a **junct
 
 **Trade-off:** This requires additional YAML files and explicit modeling, but results in more maintainable and predictable semantic models.
 :::
+
+### Fact table grain and join safety
+
+Every fact table in your model has a **grain** — the level of detail at which each row is stored (for example, “one row per order line”, “one row per daily inventory snapshot”, or “one row per invoice”).
+
+Strata’s universe formation and routing logic assume that:
+
+- Joins between tables respect their true cardinality (see [Cardinality](/semantic-model/relationships/cardinality)).
+- Many-to-many joins are modeled explicitly via bridge tables rather than hidden in a single relationship.
+
+If two facts live at incompatible grains (for example, one is “daily inventory” and the other is “per‑transaction sales”), Strata will:
+
+- **Filter out unsafe join paths** when building universes so your measures are not double-counted, and
+- Prefer **automatic data blending** across universes instead of unsafe joins when combining measures at different grains.
+
+In practice, this means modelers should:
+
+- Normalize data or introduce proper bridge/link tables when relationships are naturally many-to-many, and
+- Pre-aggregate raw events up to a safe fact grain when necessary.
 
 ## How It Works
 
@@ -153,7 +174,7 @@ Query results are:
 
 **Measure**: An aggregatable metric (e.g., "Total Sales", "Order Count")
 
-**Universe**: A data access path through the semantic model that can answer a query
+**Universe**: The complete, cardinality-safe join tree reachable from a chosen root (fact) table. Conceptually, it is the “virtual table” formed by joining that fact to all dimension tables it can safely reach. Universes are what the planner uses for query routing and to decide which dimensions can group a given measure.
 
 **Cardinality**: The relationship type between tables (one-to-one, one-to-many, many-to-one)
 
@@ -195,9 +216,19 @@ my-project/
 4. **Test**: Validate with `strata audit` and test files
 5. **Deploy**: Upload to server with `strata deploy`
 
+## Test-driven learning
+
+A good way to confirm that the model behaves as documented is to **build queries in the Strata UI** and **inspect the generated SQL**. Look for:
+
+- **CTEs** – When blending or multi-step logic is involved, the engine typically emits `WITH ... AS (...)` style subqueries.
+- **Join and grouping structure** – Verify that the chosen universe and dimensions match what you expect.
+
+If the SQL shape or results differ from the docs, use that as a signal to double-check your model (relationships, grains, extended blend groups, exclusions) or to clarify the documentation.
+
 ## Next Steps
 
+- [Key terms and when to use what](/getting-started/glossary) — Glossary and decision guide
 - Learn how to [create tables](/cli/tables)
 - Understand [field types and expressions](/semantic-model/fields-and-types)
 - Explore [relationships](/cli/relationships)
-- Read about [advanced features](/advanced)
+- Read about [universe formation](/advanced/universe-formation) and [advanced features](/advanced)

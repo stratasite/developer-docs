@@ -13,6 +13,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'getting-started/installation',
         'getting-started/concepts',
+        'getting-started/glossary',
         'getting-started/quickstart',
         'getting-started/tutorial',
       ],

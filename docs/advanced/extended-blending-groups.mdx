@@ -115,6 +115,49 @@ Queries that use “Activity Date” can then apply it across sales, returns, an
 4. **Meaningful group names** — Use a group name that reflects the business concept (e.g. `order_date_blend`, `activity_date`).
 5. **Avoid over-blending** — Only put dimensions in a group when they truly represent the same concept; mixing different semantics can produce confusing results.
 
+## How automatic data blending works (developer view)
+
+Extended blend groups are one part of Strata’s **automatic data blending** system. In industry terms, this is sometimes called **data blending** or **multipass SQL**; Strata uses the terms *automatic data blending* and *extended blend groups*. At a high level:
+
+- There is a single **logical key** for a concept like “activity date” in the semantic layer.
+- Each fact table exposes one or more physical columns that implement that key, and you tie those columns together using a shared `extended_blend_group`.
+- At query time, the planner knows which physical column to use for each fact, and can safely aggregate and **merge** results on the logical key.
+
+When a query asks for measures from multiple facts that share a blend group:
+
+1. **Universe selection** picks the relevant universes/facts.
+2. For each fact/universe, the planner builds a node in a query graph that aggregates that fact **to the lowest common dimensionality** (for example, by the blended date and any other shared dimensions).
+3. The planner then adds a final **merge node** that joins these aggregate nodes on the blended dimensions.
+
+The generated SQL typically uses Common Table Expressions (CTEs) to represent this graph:
+
+```sql
+WITH
+  store_sales_agg AS (
+    SELECT activity_date, SUM(store_amount) AS store_revenue
+    FROM store_sales
+    GROUP BY activity_date
+  ),
+  web_sales_agg AS (
+    SELECT activity_date, SUM(web_amount) AS web_revenue
+    FROM web_sales
+    GROUP BY activity_date
+  ),
+  final AS (
+    SELECT
+      COALESCE(s.activity_date, w.activity_date) AS activity_date,
+      store_revenue,
+      web_revenue
+    FROM store_sales_agg s
+    FULL OUTER JOIN web_sales_agg w
+      ON s.activity_date = w.activity_date
+  )
+SELECT *
+FROM final;
+```
+
+You do not need to write this SQL yourself—the semantic model (relationships, grains, and `extended_blend_group` values) gives the planner enough information to construct it automatically.
+
 ## Relation to Relationships and Paths
 
 Blending does not replace [relationships](/semantic-model/relationships/cardinality). Tables still need proper `one_to_many`, `many_to_one`, or `one_to_one` relationships. Extended blend groups tell the planner how to treat dimensions that live in different tables as one for grouping and filtering when paths exist.

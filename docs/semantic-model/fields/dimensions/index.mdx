@@ -117,6 +117,8 @@ value_list_size: 500
 
 For dimensions that should blend across tables in queries, set the same `extended_blend_group` on each. See [Extended blending](/semantic-model/expressions/extended-blending) and [Extended blending groups](/advanced/extended-blending-groups).
 
+When you use table or entity generation templates (for example, from the CLI or a UI), ensure the template exposes a way to **assign a dimension to one or more extended blend groups** so that blend groups can be configured without editing raw YAML by hand.
+
 ## Primary Keys
 
 Mark dimensions as primary keys for query optimization:
@@ -134,6 +136,59 @@ Mark dimensions as primary keys for query optimization:
 - Helps planner optimize joins
 - Ensures uniqueness
 - Improves query performance
+
+## Complex Dimensions
+
+Complex dimensions are dimensions whose expressions are defined in terms of **other dimensions** instead of directly referencing a physical column.
+
+Rules:
+
+- Complex dimensions may reference **only dimensions**, not measures.
+- All referenced dimensions must be reachable in the same **universe** as the complex dimension (so they can be grouped together).
+- Evaluation happens at query time, similar to [compound measures](/semantic-model/fields/measures/compound).
+
+### Example: Derived status label
+
+```yaml
+- type: dimension
+  name: Customer Status Code
+  data_type: string
+  expression:
+    sql: status_code
+
+- type: dimension
+  name: Customer Status
+  data_type: string
+  expression:
+    sql: |
+      CASE
+        WHEN [Customer Status Code] = 'A' THEN 'Active'
+        WHEN [Customer Status Code] = 'I' THEN 'Inactive'
+        ELSE 'Unknown'
+      END
+```
+
+### Example: Custom date bucket
+
+```yaml
+- type: dimension
+  name: Order Date
+  data_type: date
+  expression:
+    sql: order_date
+
+- type: dimension
+  name: Order Month Label
+  data_type: string
+  expression:
+    sql: to_char([Order Date], 'YYYY-MM')
+```
+
+Use complex dimensions when you want to:
+
+- Reuse existing dimensions in multiple derived attributes,
+- Keep business-friendly labels and buckets out of raw SQL in every query, and
+- Ensure that all logic for a concept (like “status” or “month”) lives in one place in the semantic model.
 
 ## Common Patterns
 

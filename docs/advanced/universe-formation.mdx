@@ -4,12 +4,15 @@ Understanding how Strata builds query paths through your semantic model.
 
 ## Overview
 
-When you deploy a semantic model, Strata's **Formation Engine** generates all possible paths from every table to every reachable field. These paths form **universes** — complete data access routes that the query planner uses to answer user queries.
+When you deploy a semantic model, Strata's **Formation Engine** generates all possible paths from every table to every reachable field. These paths form **universes** — complete, cardinality-safe data access routes that the query planner uses to answer user queries.
 
 Understanding universe formation helps you:
-- Design efficient semantic models
-- Troubleshoot why certain queries work or don't
-- Optimize query performance through relationship design
+- **Design efficient semantic models** – keep join graphs sane and avoid double-counting
+- **Understand query routing** – why a particular table/universe was chosen for a query
+- **Reason about dimensionality** – which dimensions are allowed to group a given measure
+- **Validate measure eligibility** – why some combinations of measures/dimensions are invalid
+
+If you are familiar with other tools, a Strata universe plays a role similar to a **BusinessObjects Universe** or a **Looker Explore**, but it is derived automatically from your YAML model and enforced with strict cardinality and routing rules.
 
 ## What is a Universe?
 

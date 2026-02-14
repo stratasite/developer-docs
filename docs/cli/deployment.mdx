@@ -194,9 +194,9 @@ production_branch: main
 project_id: 123  # Auto-populated after first deployment
 ```
 
-### .strata (Local Secrets)
+### .strata (Local Secrets Only)
 
-Store your Strata API key and other secrets in `.strata` (gitignored). Get the API key from your Strata web app: open your project, go to **Settings → API Keys**, and create or copy a key. The CLI uses it when you run `strata deploy`.
+Store your Strata **API key** and other secrets in `.strata` (gitignored). **Do not put the server URL here** — the server URL belongs in `project.yml` (see above). Get the API key from your Strata web app: open your project, go to **Settings → API Keys**, and create or copy a key. The CLI uses it when you run `strata deploy`.
 
 ```yaml
 api_key: your_api_key_here
@@ -207,6 +207,26 @@ environments:
   staging:
     api_key: staging_key_here
 ```
+
+## Deployment architecture and infrastructure
+
+The `strata deploy` command publishes your **semantic model** to a running Strata server. In most production setups:
+
+- The Strata server itself runs in a container (for example, Docker or Kubernetes) and hosts the Rails application and API only.
+- You are responsible for providing:
+  - A production-grade **database** for the Strata server (typically PostgreSQL).
+  - Object storage (such as S3, GCS, or Azure Blob) if you use features that rely on Active Storage.
+
+Configuration for a deployed Strata server is provided via a combination of:
+
+- A server‑side configuration file, and/or
+- Environment variables for:
+  - Database connection (host, port, database, user, password, SSL).
+  - Email (SMTP) settings.
+  - Public host URL and any proxy headers.
+  - Storage backend configuration (bucket names, credentials, regions).
+
+The CLI does not manage this infrastructure; it assumes the server is reachable at the URL in `project.yml` and that the server has already been configured with the appropriate database and storage backends.
 
 ## Best Practices
 
