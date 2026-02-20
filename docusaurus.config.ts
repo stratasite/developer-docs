@@ -29,6 +29,11 @@ const config: Config = {
     v4: true, // Improve compatibility with the upcoming Docusaurus v4
   },
 
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid'],
+
   url: siteUrl,
   baseUrl,
 
@@ -99,14 +104,7 @@ const config: Config = {
         width: 32,
         height: 32,
       },
-      items: [
-        {
-          type: 'docSidebar',
-          sidebarId: 'docsSidebar',
-          position: 'left',
-          label: 'Getting Started',
-        },
-      ],
+      items: [],
     },
     footer: {
       style: 'dark',

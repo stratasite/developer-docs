@@ -1,4 +1,4 @@
-# Key Terms and When to Use What
+# Key Terminologies
 
 Definitions of Strata-specific and related terms, plus guidance on choosing the right modeling approach.
 
@@ -6,11 +6,13 @@ Definitions of Strata-specific and related terms, plus guidance on choosing the 
 
 These terms are used throughout the docs. If you are new to Strata (or to semantic layers in general), this is a good reference.
 
-**Universe** — The complete, cardinality-safe join tree reachable from a chosen root (fact) table. Conceptually, the "virtual table" formed by joining that fact to all dimension tables it can safely reach. The planner uses universes for query routing and to decide which dimensions can group a given measure. If you know other tools: similar in spirit to a **BusinessObjects Universe** or the scope of a **Looker Explore**, but derived automatically from your YAML and enforced with strict cardinality rules.
+**Fact table grain** — The level of detail of a fact table (e.g. one row per order line, per day, per invoice). Strata assumes safe cardinality; incompatible grains are handled via blending or by restricting measures to safe join paths.
 
-**Automatic data blending** — Strata’s way of combining measures from multiple fact tables (often at different grains) in one query without you writing the joins. Dimensions that share an **extended blend group** are treated as one logical dimension; the engine aggregates each fact to a common grain and merges results. Industry terms you may hear: *data blending*, *multipass SQL*.
+**Universe** — The complete, cardinality-safe join tree reachable from a chosen root (fact) table. Conceptually, the "virtual table" formed by joining that fact to all dimension tables it can safely reach. The query planner uses universes for query routing and to decide which dimensions can group a given measure.
 
-**Extended blend group** — A named group (e.g. `activity_date`) that multiple dimensions can belong to. Dimensions in the same group are treated as semantically equivalent for blending, so the planner can merge queries across tables that share that concept.
+**Automatic data blending** — Strata’s way of combining measures from multiple fact tables (often at different grains) in one query without you writing the joins. The engine aggregates each fact in its own universe and merges results on common dimensions. When dimensions from different tables should count as the same for that merge, you assign them an **extended blend group**. Industry terms you may hear: *data blending*, *multipass SQL*.
+
+**Extended blend group** — A named group (e.g. `activity_date`) that you assign to dimensions so they are treated as one logical dimension during **automatic data blending**. Dimensions in the same group are semantically equivalent for the merge, so the planner can combine queries across tables that share that concept.
 
 **Snapshot measure** — A measure that captures a value at a **point in time** (beginning or end of a period) rather than summing over the period. Used for stateful metrics: inventory, balances, membership counts. Not for transactional flows.
 
@@ -18,13 +20,10 @@ These terms are used throughout the docs. If you are new to Strata (or to semant
 
 **Complex dimension** — A dimension whose expression references other dimensions (e.g. `CASE WHEN [Status Code] = 'A' THEN 'Active' ...`). Only dimensions can be referenced; not measures. Same universe required.
 
-**Inclusion measure** — A measure that temporarily **includes** extra dimensions in an intermediate aggregation to compute correct metrics (like medians or averages), then drops those dimensions in the final result. This solves the problem of computing accurate statistics when underlying data has uneven counts per group (e.g., computing daily median account view hours from per-title data). Industry analogs: **Tableau's INCLUDE Level of Detail calculations**, **MicroStrategy level metrics**. **Looker does not support this pattern**. See: [Inclusions](/advanced/inclusions)
+**Inclusion measure** — A measure that temporarily **includes** extra dimensions in an intermediate aggregation to compute correct metrics (like medians or averages), then re-aggregates at the query grain and drops those dimensions in the final result. This solves the problem of computing accurate statistics when underlying data has uneven counts per group (e.g., computing daily median account view hours from per-title data in a streaming company). *Industry analogs for this pattern:* Tableau's **INCLUDE Level of Detail**, MicroStrategy level metrics. Looker does not support this pattern. See: [Inclusions](/advanced/inclusions)
 
-**Exclusion** — Advanced control that **removes** dimensions from a measure's grouping or filtering behavior. Used for "% of total" measures and other cases where you want a measure to ignore certain dimensions' grouping or filters. Grouping behavior and filter behavior are independent knobs. See: [Exclusions](/advanced/exclusions)
+**Exclusion** — Advanced control that **removes** dimensions from a measure's grouping or filtering behavior (each can be set independently). Used for "% of total" measures and other cases where you want a measure to ignore certain dimensions' grouping or filters. *Industry analogs:* Tableau's **EXCLUDE Level of Detail** , Power BI DAX filter-context functions (e.g. REMOVEFILTERS, ALLEXCEPT). See: [Exclusions](/advanced/exclusions)
 
-**Fact table grain** — The level of detail of a fact table (e.g. one row per order line, per day, per invoice). Strata assumes safe cardinality; incompatible grains are handled via blending or by filtering out unsafe join paths.
-
-**Cardinality** — The relationship type between two tables: one-to-one, one-to-many, many-to-one. Many-to-many is not supported; use bridge tables instead.
 
 ---
 
@@ -48,14 +47,5 @@ These terms are used throughout the docs. If you are new to Strata (or to semant
 
 ### Validating your model
 
-Use the Strata UI to build queries and **inspect the generated SQL** (CTEs, joins, grouping). If the SQL or results don’t match what you expect, check relationships, grains, extended blend groups, and exclusion/inclusion settings against the docs.
+As you build the model, use the Strata UI to build queries and **inspect the generated SQL** (CTEs, joins, grouping). If the SQL or results don’t match what you expect, check relationships, grains, extended blend groups, and exclusion/inclusion settings against the docs.
 
----
-
-## Next Steps
-
-- [Core concepts](/getting-started/concepts) — Tables, relationships, universes
-- [Universe formation](/advanced/universe-formation) — How paths are built
-- [Extended blending groups](/advanced/extended-blending-groups) — Blending and CTEs
-- [Inclusions](/advanced/inclusions) — Multi-level aggregations
-- [Exclusions](/advanced/exclusions) — Grouping and filter behavior
