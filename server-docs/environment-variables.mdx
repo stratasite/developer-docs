@@ -30,7 +30,7 @@ The database user needs `CREATEDB` privilege for Strata to auto-create its four 
 | `PORT` | No | `3000` | Host port for the web UI (mapped to container port 80) |
 | `APP_HOST` | No | `localhost` | Application hostname, used in email links and URL generation |
 | `APP_PROTOCOL` | No | `https` | Protocol for generated URLs (`http` or `https`) |
-| `SECRET_KEY_BASE` | No | Auto-generated | Rails secret key for encrypting sessions, cookies, and tokens. Auto-generated on first start and persisted to `/rails/storage/.secret_key_base`. Set explicitly for [multi-node deployments](/server/manual-install#multi-instance-deployment). |
+| `SECRET_KEY_BASE` | No | Auto-generated | Rails secret key for encrypting sessions, cookies, and tokens. The install script generates one automatically on first install. Set explicitly for [multi-node deployments](/server/manual-install#multi-instance-deployment). Generate with `openssl rand -hex 64`. |
 | `STRATA_VERSION` | No | `latest` | Docker image tag to use. Set to a specific version (e.g., `1.0.0`) to pin releases. |
 
 ## SSL
@@ -136,6 +136,7 @@ DB_HOST=db.internal.yourcompany.com
 DB_PORT=5432
 DB_USERNAME=strata
 DB_PASSWORD=your_secure_password
+SECRET_KEY_BASE=  # Generate with: openssl rand -hex 64
 
 # === Application ===
 PORT=3000

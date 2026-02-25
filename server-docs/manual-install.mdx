@@ -97,6 +97,7 @@ DB_HOST=your-postgres-host
 DB_PORT=5432
 DB_USERNAME=strata
 DB_PASSWORD=your_secure_password
+SECRET_KEY_BASE=  # Generate with: openssl rand -hex 64
 
 # Recommended
 APP_HOST=strata.yourcompany.com
@@ -124,7 +125,6 @@ Expected output on first run:
 ```
 [Strata] Waiting for PostgreSQL at your-db-host:5432...
 [Strata] PostgreSQL is ready.
-[Strata] Generated new SECRET_KEY_BASE (persisted to /rails/storage/.secret_key_base).
 [Strata] Preparing databases...
 [Strata] Databases ready.
 [Strata] First run complete. Visit the application to create your admin account.
@@ -147,7 +147,7 @@ Open your browser to the application URL. The Setup Wizard prompts you to create
 
 Strata listens on port 80 inside the container. For production deployments, place it behind a reverse proxy that terminates SSL (Nginx, Caddy, AWS ALB, Traefik, etc.).
 
-Configure your `.env` to match:
+Set these environment variables (e.g. in your `.env` file or via your configuration management):
 
 ```bash
 # Behind an SSL-terminating reverse proxy (recommended)
@@ -175,19 +175,13 @@ For high availability or load balancing across multiple nodes:
 
 All nodes must share the same `SECRET_KEY_BASE`. This key encrypts sessions, cookies, and signed tokens. If nodes use different keys, users will be logged out when their request hits another node.
 
-**Get the key from an existing node:**
+Generate a shared key:
 
 ```bash
-docker exec <container_name> cat /rails/storage/.secret_key_base
+openssl rand -hex 64
 ```
 
-**Or generate a new one:**
-
-```bash
-docker run --rm ghcr.io/stratasite/strata:latest ./bin/rails secret
-```
-
-Set it explicitly in `.env` on every node:
+Set the same `SECRET_KEY_BASE` environment variable on every node — via `.env`, your orchestrator's secrets management, or however you configure environment variables:
 
 ```bash
 SECRET_KEY_BASE=your_shared_secret_key_base_value
@@ -195,14 +189,14 @@ SECRET_KEY_BASE=your_shared_secret_key_base_value
 
 ### Shared Storage
 
-The `strata_storage` volume stores uploaded files (when using local storage) and the auto-generated `SECRET_KEY_BASE`. For multi-node deployments:
+The `strata_storage` volume stores uploaded files (when using local storage). For multi-node deployments:
 
-- **Option A:** Use S3-compatible storage (`STORAGE_BACKEND=s3`) so all nodes share the same file storage. Set `SECRET_KEY_BASE` explicitly in `.env`.
+- **Option A:** Use S3-compatible storage (`STORAGE_BACKEND=s3`) so all nodes share the same file storage.
 - **Option B:** Use a shared filesystem (NFS, EFS) mounted as the `strata_storage` volume.
 
 ### Database
 
-All nodes connect to the same PostgreSQL instance. No special configuration is needed — just ensure all `.env` files point to the same database.
+All nodes connect to the same PostgreSQL instance. No special configuration is needed — just ensure all nodes have the same database connection variables.
 
 ### Upgrade Strategy
 

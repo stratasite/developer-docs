@@ -19,7 +19,7 @@ PGPASSWORD=$DB_PASSWORD pg_dump \
 
 ### Storage Volume Backup
 
-The `strata_storage` volume contains the auto-generated `SECRET_KEY_BASE` and uploaded files (if using local storage):
+The `strata_storage` volume contains uploaded files (if using local storage):
 
 ```bash
 docker compose cp strata:/rails/storage ./storage-backup-$(date +%Y%m%d)
@@ -114,7 +114,7 @@ For deployments running multiple Strata instances:
 
 1. **Upgrade one node at a time** (rolling update)
 2. Only the **web server** container runs migrations — the jobs container does not
-3. Ensure all nodes use the same `SECRET_KEY_BASE` in their `.env`
+3. Ensure all nodes use the same `SECRET_KEY_BASE` environment variable
 4. After upgrading all nodes, verify with `curl http://each-node:PORT/up`
 
 :::caution

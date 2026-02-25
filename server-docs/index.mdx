@@ -32,8 +32,7 @@ See [Manual Install](/server/manual-install) for step-by-step instructions.
 ## What Happens on First Start
 
 1. The container waits for PostgreSQL to be ready
-2. `SECRET_KEY_BASE` is auto-generated and persisted (or you can provide your own)
-3. Four databases are created automatically (if the DB user has `CREATEDB` privilege)
+2. Four databases are created automatically (if the DB user has `CREATEDB` privilege)
 4. Schema is loaded and migrations run
 5. The application starts on port 80 inside the container
 
@@ -46,7 +45,7 @@ Strata runs two containers from the same image:
 - **strata** — the web server (Puma). Handles HTTP requests, runs migrations on startup.
 - **jobs** — background job processor (Solid Queue). Executes queries, deployments, and scheduled tasks.
 
-Both containers share the same `.env` configuration and a persistent storage volume. PostgreSQL is the only external dependency — no Redis, no Kafka, no additional services.
+Both containers share the same environment variables and a persistent storage volume. PostgreSQL is the only external dependency — no Redis, no Kafka, no additional services.
 
 ## Next Steps
 
