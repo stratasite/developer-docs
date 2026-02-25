@@ -20,8 +20,8 @@ const githubUrl = 'https://github.com/stratasite/developer-docs';
 const logoPath = 'img/logo.svg';
 
 const config: Config = {
-  title: 'Strata - Developer Docs',
-  tagline: 'Documentation for Data Engineers building semantic models',
+  title: 'Strata Docs',
+  tagline: 'Documentation for Strata — semantic layer platform',
   favicon: 'img/favicon.svg',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
@@ -77,6 +77,15 @@ const config: Config = {
       {},
     ],
     [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'server',
+        path: 'server-docs',
+        routeBasePath: 'server',
+        sidebarPath: './server-sidebars.ts',
+      },
+    ],
+    [
       require.resolve('@easyops-cn/docusaurus-search-local'),
       {
         hashed: true,
@@ -96,25 +105,56 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'Strata Developer Docs',
+      title: 'Strata Docs',
       logo: {
-        alt: 'Strata Developer Docs',
+        alt: 'Strata Docs',
         src: logoPath,
         href: baseUrl,
         width: 32,
         height: 32,
       },
-      items: [],
+      items: [
+        {
+          type: 'doc',
+          docId: 'getting-started/index',
+          label: 'Developer Docs',
+          position: 'left',
+        },
+        {
+          type: 'doc',
+          docId: 'index',
+          label: 'Server Docs',
+          position: 'left',
+          docsPluginId: 'server',
+        },
+      ],
     },
     footer: {
       style: 'dark',
       links: [
         {
-          title: 'Documentation',
+          title: 'Developer Docs',
           items: [
             {
               label: 'Getting Started',
               to: 'getting-started/installation',
+            },
+            {
+              label: 'CLI Reference',
+              to: 'cli',
+            },
+          ],
+        },
+        {
+          title: 'Server',
+          items: [
+            {
+              label: 'Server Installation',
+              to: 'server',
+            },
+            {
+              label: 'Environment Variables',
+              to: 'server/environment-variables',
             },
           ],
         },
