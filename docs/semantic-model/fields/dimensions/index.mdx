@@ -113,6 +113,17 @@ Limit the number of values shown in filters (default: 1000).
 value_list_size: 500
 ```
 
+### synonyms
+
+Alternative names for this dimension. Helps AI-powered search and natural language queries match fields when users use different terminology.
+
+```yaml
+synonyms:
+  - client name
+  - buyer name
+  - account name
+```
+
 ### extended_blend_group
 
 For dimensions that should blend across tables in queries, set the same `extended_blend_group` on each. See [Extended blending](/semantic-model/expressions/extended-blending) and [Extended blending groups](/advanced/extended-blending-groups).
