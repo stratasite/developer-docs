@@ -62,8 +62,8 @@ products_categories:
 - When you want all categories, even without products
 
 :::note Full Outer Join Not Supported
-Strata does not support `full` (FULL OUTER) joins. If you need all rows from both tables regardless of match, consider:
-- Using two separate LEFT joins and combining results
+Relationship join types in Strata are restricted to `inner`, `left`, and `right` in the server model—`full` (FULL OUTER) is not a valid value. If you need all rows from both tables regardless of match, consider:
+- Using two separate LEFT joins and combining results (e.g. in a view or downstream)
 - Restructuring your model to avoid the need for full outer joins
 :::
 

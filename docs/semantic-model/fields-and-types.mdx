@@ -223,6 +223,22 @@ Control whether dimension values are listed in filters:
     sql: category
 ```
 
+### Synonyms
+
+Provide alternative names for a field. Synonyms help AI-powered search and natural language queries find the right field when users refer to it by different names.
+
+```yaml
+- type: dimension
+  name: Customer Name
+  data_type: string
+  synonyms:
+    - client name
+    - buyer name
+    - account name
+  expression:
+    sql: customer_name
+```
+
 ### Grains (Date/DateTime Only)
 
 Specify supported granularities for date fields:
@@ -279,12 +295,16 @@ fields:
     expression:
       sql: customer_id
 
-  # Formatted measure
+  # Formatted measure with synonyms
   - type: measure
     name: Total Revenue
     description: Sum of all order amounts
     data_type: decimal
     formatter: currency_usd
+    synonyms:
+      - total sales
+      - gross revenue
+      - sales amount
     expression:
       sql: sum(amount)
 

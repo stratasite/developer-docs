@@ -62,6 +62,17 @@ Hide from UI while keeping available for calculations.
 
 Apply formatting. [Formatters →](/semantic-model/fields/formatters)
 
+### synonyms
+
+Alternative names for this measure. Helps AI-powered search and natural language queries match fields when users use different terminology.
+
+```yaml
+synonyms:
+  - total sales
+  - gross revenue
+  - sales amount
+```
+
 ### snapshot
 
 For point-in-time measures: `ending` or `beginning`. Table must have `snapshot_date`. [Snapshot measures →](/semantic-model/fields/measures/snapshot)

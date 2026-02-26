@@ -209,7 +209,7 @@ fields:
     data_type: integer
     expression:
       primary_key: true
-      sql: ss_tickent_number
+      sql: ss_ticket_number
 
   - type: measure
     name: Store Quantity
@@ -223,6 +223,10 @@ fields:
     description: Actual sales price
     data_type: decimal
     formatter: currency_usd
+    synonyms:
+      - sales price
+      - selling price
+      - store revenue
     expression:
       sql: sum(ss_sales_price)
 ```

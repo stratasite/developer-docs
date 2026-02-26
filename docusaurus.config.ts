@@ -20,14 +20,19 @@ const githubUrl = 'https://github.com/stratasite/developer-docs';
 const logoPath = 'img/logo.svg';
 
 const config: Config = {
-  title: 'Strata - Developer Docs',
-  tagline: 'Documentation for Data Engineers building semantic models',
+  title: 'Strata Docs',
+  tagline: 'Documentation for Strata — semantic layer platform',
   favicon: 'img/favicon.svg',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
     v4: true, // Improve compatibility with the upcoming Docusaurus v4
   },
+
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid'],
 
   url: siteUrl,
   baseUrl,
@@ -72,6 +77,15 @@ const config: Config = {
       {},
     ],
     [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'server',
+        path: 'server-docs',
+        routeBasePath: 'server',
+        sidebarPath: './server-sidebars.ts',
+      },
+    ],
+    [
       require.resolve('@easyops-cn/docusaurus-search-local'),
       {
         hashed: true,
@@ -91,9 +105,9 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'Strata Developer Docs',
+      title: 'Strata Docs',
       logo: {
-        alt: 'Strata Developer Docs',
+        alt: 'Strata Docs',
         src: logoPath,
         href: baseUrl,
         width: 32,
@@ -101,10 +115,17 @@ const config: Config = {
       },
       items: [
         {
-          type: 'docSidebar',
-          sidebarId: 'docsSidebar',
+          type: 'doc',
+          docId: 'getting-started/index',
+          label: 'Developer Docs',
           position: 'left',
-          label: 'Getting Started',
+        },
+        {
+          type: 'doc',
+          docId: 'index',
+          label: 'Server Docs',
+          position: 'left',
+          docsPluginId: 'server',
         },
       ],
     },
@@ -112,11 +133,28 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'Documentation',
+          title: 'Developer Docs',
           items: [
             {
               label: 'Getting Started',
               to: 'getting-started/installation',
+            },
+            {
+              label: 'CLI Reference',
+              to: 'cli',
+            },
+          ],
+        },
+        {
+          title: 'Server',
+          items: [
+            {
+              label: 'Server Installation',
+              to: 'server',
+            },
+            {
+              label: 'Environment Variables',
+              to: 'server/environment-variables',
             },
           ],
         },

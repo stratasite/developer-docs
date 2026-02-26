@@ -18,9 +18,6 @@ A semantic layer is an abstraction that sits between your raw database tables an
 - **Code review**: PR-based workflows for model changes
 - **Branching**: Test changes in branches before deploying to production
 - **CI/CD**: Automated testing and deployment pipelines
-- **Rollback**: Easy revert to any previous state
-
-This makes Strata ideal for teams that value engineering rigor and want to treat their semantic layer as code.
 :::
 
 ## Key Components
@@ -28,9 +25,9 @@ This makes Strata ideal for teams that value engineering rigor and want to treat
 ### Tables
 
 Tables (`tbl.*.yml`) represent physical database tables with semantic metadata. They define:
-- **Dimensions**: Categorical fields (e.g., Customer Name, Product Category)
-- **Measures**: Aggregatable metrics (e.g., Total Sales, Average Order Value)
-- **Cost**: Query optimization hint (lower cost = preferred)
+- **Dimensions**: Fields to group data or generally provides descriptive information (e.g., Customer Name, Product Category)
+- **Measures**: Aggregatable metrics, typically numeric (e.g., Total Sales, Average Order Value)
+- **Cost**: Query optimization hint
 - **Partitions**: Data availability constraints
 
 **Example:**
@@ -39,6 +36,14 @@ name: Store Sales
 physical_name: store_sales
 datasource: tpcds
 cost: 100
+
+# Partition logic helps the engine choose alternative tables when this one
+# can't satisfy the query. Date range is the only partition type supported.
+partitions:
+  - dimension: Date
+    predicate: between
+    filter_value: 24m   # 24 months ago
+    filter_value_end: 1d # yesterday
 
 fields:
   - type: dimension
@@ -82,22 +87,15 @@ Datasources connect Strata to your databases. They support:
 ## Core Design Principles
 
 :::tip Unique Naming Principle — Design Philosophy
-**Field names must be unique across your entire semantic layer.** Unlike other tools (Looker, dbt, Power BI, Tableau) that use namespaced fields like `table.field_name`, Strata enforces global uniqueness.
+**Field names must be unique across your entire semantic layer for a given type.** You can't have more than one dimension or measure with same name.
 
-When you define a measure called "Total Revenue", that name cannot be used anywhere else in your project — not in another table, not as a dimension, nowhere.
+When you define a measure called "Total Revenue", that name cannot be used anywhere else in your project — not in another table, not as a measure again.
 
 **Benefits:**
 - **Unambiguous references**: When a query asks for "Total Revenue", there's exactly one definition
 - **Simpler compound measures**: Reference fields by name without table prefixes: `[Total Revenue] - [Total Cost]`
 - **Consistent analytics**: Everyone uses the same metric definitions organization-wide
 - **AI-friendly**: LLMs can understand your model without disambiguation
-
-**Trade-offs:**
-- You cannot have `orders.revenue` and `subscriptions.revenue` — you must use distinct names like `order_revenue` and `subscription_revenue`
-- Naming becomes more important and requires upfront planning
-- Larger projects may face naming challenges as the model grows
-
-**Recommendation:** Establish naming conventions early (e.g., prefix patterns like `order_*`, `customer_*`) to avoid conflicts.
 :::
 
 :::danger No Many-to-Many Relationships
@@ -116,6 +114,20 @@ If you need many-to-many relationships (e.g., Users ↔ Roles), create a **junct
 **Trade-off:** This requires additional YAML files and explicit modeling, but results in more maintainable and predictable semantic models.
 :::
 
+### Fact table grain and join safety
+
+Every fact table in your model has a **grain** — the level of detail at which each row is stored.
+
+Strata’s universe formation and routing logic assume that:
+
+- Joins between tables respect their true cardinality (see [Cardinality](/semantic-model/relationships/cardinality)).
+- Many-to-many joins are modeled explicitly via bridge tables rather than hidden in a single relationship.
+
+If two facts live at incompatible grains (for example, one is “daily inventory” and the other is “per‑transaction sales”), Strata will:
+
+- **Restrict measures to safe join paths** when building universes: measures are only exposed on paths where every join is one-to-one (or explicitly allows measure expansion). On many-to-one or one-to-many paths, only dimensions are exposed, so measures are not double-counted.
+- Use **automatic data blending** across universes when no single path can safely serve all measures—each fact is queried in its own universe and results are merged on common dimensions.
+
 ## How It Works
 
 ### 1. Model Definition
@@ -123,7 +135,7 @@ If you need many-to-many relationships (e.g., Users ↔ Roles), create a **junct
 Data engineers define semantic models using YAML files:
 - Table models describe fields and metadata
 - Relationship models define joins
-- Migrations track changes over time
+- Migrations track changes over time. We'll discuss about migration in coming sections.
 
 ### 2. Deployment
 
@@ -135,9 +147,9 @@ Models are deployed to a Strata server:
 ### 3. Query Planning
 
 When a user creates a query:
-- **Universe Resolution**: Planner finds optimal data paths
-- **DAG Construction**: Builds query execution plan
-- **SQL Generation**: Converts semantic query to optimized SQL
+- **Universe Resolution**: Strata's planners finds optimal data paths
+- **Build**: Builds query execution plan
+- **Converts** semantic query to optimized SQL
 - **Execution**: Runs query against datasource
 
 ### 4. Result Delivery
@@ -146,24 +158,6 @@ Query results are:
 - Cached for performance
 - Formatted according to field definitions
 - Returned to the user interface
-
-## Key Terminology
-
-**Dimension**: A categorical field used for grouping and filtering (e.g., "Product Category", "Customer Region")
-
-**Measure**: An aggregatable metric (e.g., "Total Sales", "Order Count")
-
-**Universe**: A data access path through the semantic model that can answer a query
-
-**Cardinality**: The relationship type between tables (one-to-one, one-to-many, many-to-one)
-
-**Cost**: A numeric value that influences table selection when multiple tables can answer the same question
-
-**Snapshot Measure**: A measure that captures a value at a specific point in time (beginning or ending of period)
-
-**Decorator**: A transformation applied to projections (e.g., date truncation, window functions, temporal comparisons)
-
-**Partition**: A constraint on data availability (e.g., "table only contains last 24 months")
 
 ## Project Structure
 
@@ -192,12 +186,13 @@ my-project/
 1. **Initialize**: Create project with `strata init`
 2. **Configure**: Add datasources with `strata datasource add`
 3. **Model**: Create tables and relationships
-4. **Test**: Validate with `strata audit` and test files
+4. **Validate**: Validate with `strata audit` and test files
 5. **Deploy**: Upload to server with `strata deploy`
 
 ## Next Steps
 
+- [Key terms and when to use what](/getting-started/glossary) — Glossary and decision guide
 - Learn how to [create tables](/cli/tables)
 - Understand [field types and expressions](/semantic-model/fields-and-types)
 - Explore [relationships](/cli/relationships)
-- Read about [advanced features](/advanced)
+- Read about [universe formation](/advanced/universe-formation) and [advanced features](/advanced)

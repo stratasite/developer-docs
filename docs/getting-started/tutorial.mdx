@@ -130,15 +130,23 @@ The same patterns apply to the web channel tables you will add next.
 
 Before adding your own tables, let's deploy the existing model to your Strata server and see it in action. This gives you a visual understanding of what the semantic model looks like when deployed.
 
-### 6a. Configure the Server URL
+### 6a. Configure the Server URL and API Key
 
-Open your project's `.strata` file (or create one if it doesn't exist) and set the server URL for your Strata instance:
+**Server URL** — Configure the Strata server URL in **`project.yml`** (not in `.strata`). Open `project.yml` and set the `server` key:
 
 ```yaml
-server_url: https://your-strata-server.com
+server: https://your-strata-server.com
 ```
 
-Replace `https://your-strata-server.com` with the URL of your Strata server.
+Replace `https://your-strata-server.com` with the URL of your Strata server (e.g. `http://localhost:3000` for a local instance). The tpcds-tutorial repo includes `server: http://localhost:3000` by default; change it if your server runs elsewhere.
+
+**API key** — Store your Strata API key in **`.strata`** (gitignored). Create `.strata` if it doesn't exist and add:
+
+```yaml
+api_key: your_api_key_here
+```
+
+Get the API key from your Strata web app: open your project, go to **Settings → API Keys**, and create or copy a key. See [Deployment](/cli/deployment) for more.
 
 ### 6b. Run Audit on the Existing Model
 

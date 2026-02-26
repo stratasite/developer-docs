@@ -1,0 +1,122 @@
+# Upgrading
+
+Strata is designed for zero-downtime upgrades. Database migrations run automatically when the web server container starts.
+
+## Before You Upgrade
+
+Always back up your database and storage volume before upgrading.
+
+### Database Backup
+
+```bash
+# Using pg_dump (replace with your connection details)
+PGPASSWORD=$DB_PASSWORD pg_dump \
+  -h $DB_HOST \
+  -U $DB_USERNAME \
+  -Fc strata_production \
+  > backup-$(date +%Y%m%d-%H%M%S).dump
+```
+
+### Storage Volume Backup
+
+The `strata_storage` volume contains uploaded files (if using local storage):
+
+```bash
+docker compose cp strata:/rails/storage ./storage-backup-$(date +%Y%m%d)
+```
+
+---
+
+## Upgrade Methods
+
+### Using the Installer Script
+
+If you installed with the installer script, re-run it from the install directory:
+
+```bash
+cd /path/to/strata
+curl -fsSL https://strata.do/server/install.sh | bash
+```
+
+The installer detects the existing installation, preserves your `.env`, pulls the new image, and restarts.
+
+### Manual Upgrade
+
+```bash
+# 1. Pull the new image
+docker compose pull
+
+# 2. Restart containers (migrations run automatically)
+docker compose up -d
+
+# 3. Verify
+docker compose logs -f strata
+curl http://localhost:3000/up
+```
+
+---
+
+## Version Pinning
+
+By default, Strata uses the `latest` tag. For production environments, pin to a specific version:
+
+```bash
+# In .env
+STRATA_VERSION=1.0.0
+```
+
+Then pull and restart:
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+---
+
+## Rollback
+
+If an upgrade causes issues:
+
+1. **Stop containers:**
+   ```bash
+   docker compose down
+   ```
+
+2. **Restore the database:**
+   ```bash
+   PGPASSWORD=$DB_PASSWORD pg_restore \
+     -h $DB_HOST \
+     -U $DB_USERNAME \
+     -d strata_production \
+     --clean --if-exists \
+     backup-YYYYMMDD-HHMMSS.dump
+   ```
+
+3. **Restore the storage volume (if needed):**
+   ```bash
+   docker compose cp ./storage-backup-YYYYMMDD/. strata:/rails/storage
+   ```
+
+4. **Pin to the previous version and restart:**
+   ```bash
+   # In .env, set STRATA_VERSION to the previous version
+   STRATA_VERSION=0.9.0
+   ```
+   ```bash
+   docker compose pull && docker compose up -d
+   ```
+
+---
+
+## Multi-Node Upgrades
+
+For deployments running multiple Strata instances:
+
+1. **Upgrade one node at a time** (rolling update)
+2. Only the **web server** container runs migrations — the jobs container does not
+3. Ensure all nodes use the same `SECRET_KEY_BASE` environment variable
+4. After upgrading all nodes, verify with `curl http://each-node:PORT/up`
+
+:::caution
+Do not run multiple web server containers simultaneously during a migration-heavy upgrade. If you have multiple web nodes, stop all but one, let it complete migrations, then start the others.
+:::

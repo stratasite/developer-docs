@@ -1,0 +1,187 @@
+# Manual / Enterprise Install
+
+This guide is for organizations that manage their own infrastructure and prefer to configure Strata directly rather than using the installer script. This is the recommended path for enterprise deployments, container orchestration platforms, and multi-node setups.
+
+## 1. Authenticate with the Container Registry
+
+Strata is distributed as a private Docker image on GitHub Container Registry (GHCR). Use the access token provided with your license purchase:
+
+```bash
+echo YOUR_ACCESS_TOKEN | docker login ghcr.io -u strata-customer --password-stdin
+```
+
+## 2. Pull the Image
+
+```bash
+docker pull ghcr.io/stratasite/strata:latest
+```
+
+To pin a specific version:
+
+```bash
+docker pull ghcr.io/stratasite/strata:1.0.0
+```
+
+## 3. Prepare PostgreSQL
+
+Strata uses four PostgreSQL databases:
+
+| Database | Purpose |
+|----------|---------|
+| `strata_production` | Main application data |
+| `strata_production_queue` | Background jobs (Solid Queue) |
+| `strata_production_cache` | Application cache (Solid Cache) |
+| `strata_production_cable` | WebSocket connections (Action Cable) |
+
+### Option A: Automatic Creation
+
+If your PostgreSQL user has the `CREATEDB` privilege, Strata creates all four databases on first start:
+
+```sql
+CREATE USER strata WITH PASSWORD 'your_secure_password';
+ALTER USER strata CREATEDB;
+```
+
+### Option B: Manual Creation
+
+For locked-down environments where the database user cannot create databases:
+
+```sql
+CREATE USER strata WITH PASSWORD 'your_secure_password';
+CREATE DATABASE strata_production OWNER strata;
+CREATE DATABASE strata_production_queue OWNER strata;
+CREATE DATABASE strata_production_cache OWNER strata;
+CREATE DATABASE strata_production_cable OWNER strata;
+```
+
+## 4. Create Docker Compose File
+
+Create a directory for Strata (e.g., `/opt/strata`) and add `docker-compose.yml`:
+
+```yaml
+# docker-compose.yml
+services:
+  strata:
+    image: ghcr.io/stratasite/strata:${STRATA_VERSION:-latest}
+    ports:
+      - "${PORT:-3000}:80"
+    env_file: .env
+    environment:
+      RAILS_ENV: production
+    volumes:
+      - strata_storage:/rails/storage
+    restart: unless-stopped
+
+  jobs:
+    image: ghcr.io/stratasite/strata:${STRATA_VERSION:-latest}
+    command: ["./bin/rails", "solid_queue:start"]
+    env_file: .env
+    environment:
+      RAILS_ENV: production
+    volumes:
+      - strata_storage:/rails/storage
+    restart: unless-stopped
+
+volumes:
+  strata_storage:
+```
+
+## 5. Configure Environment Variables
+
+Set the following variables (e.g. in a `.env` file in the same directory, or in your shell/system env). At minimum, you need:
+
+```bash
+# Required
+LICENSE_KEY=your_license_key_jwt_token
+DB_HOST=your-postgres-host
+DB_PORT=5432
+DB_USERNAME=strata
+DB_PASSWORD=your_secure_password
+SECRET_KEY_BASE=  # Generate with: openssl rand -hex 64
+
+# Recommended
+APP_HOST=strata.yourcompany.com
+APP_PROTOCOL=https
+```
+
+See [Environment Variables](/server/environment-variables) for the complete reference.
+
+## 6. Start Strata
+
+```bash
+docker compose up -d
+```
+
+## 7. Verify
+
+Watch the startup logs:
+
+```bash
+docker compose logs -f strata
+```
+
+Expected output on first run:
+
+```
+[Strata] Waiting for PostgreSQL at your-db-host:5432...
+[Strata] PostgreSQL is ready.
+[Strata] Preparing databases...
+[Strata] Databases ready.
+[Strata] First run complete. Visit the application to create your admin account.
+```
+
+Check the health endpoint:
+
+```bash
+curl http://localhost:3000/up
+# Expect HTTP 200
+```
+
+## 8. Create Your Admin Account
+
+Open your browser to the application URL. The Setup Wizard prompts you to create the first admin account. This page disappears automatically once a user exists.
+
+---
+
+## SSL / Reverse Proxy
+
+Strata listens on port 80 inside the container. For production deployments, place it behind a reverse proxy that terminates SSL. Set `ASSUME_SSL=true` and `FORCE_SSL=true` so Rails knows requests arrive over HTTPS.
+
+See [SSL & Reverse Proxy](/server/ssl-reverse-proxy) for full setup instructions, including Nginx, Caddy, and AWS ALB examples.
+
+---
+
+## Multi-Instance Deployment
+
+For high availability or load balancing across multiple nodes:
+
+### SECRET_KEY_BASE
+
+All nodes must share the same `SECRET_KEY_BASE`. This key encrypts sessions, cookies, and signed tokens. If nodes use different keys, users will be logged out when their request hits another node.
+
+Generate a shared key:
+
+```bash
+openssl rand -hex 64
+```
+
+Set the same `SECRET_KEY_BASE` environment variable on every node — via `.env`, your orchestrator's secrets management, or however you configure environment variables:
+
+```bash
+SECRET_KEY_BASE=your_shared_secret_key_base_value
+```
+
+### Shared Storage
+
+The `strata_storage` volume stores uploaded files (when using local storage). For multi-node deployments:
+
+- **Option A:** Use S3-compatible storage (`STORAGE_BACKEND=s3`) so all nodes share the same file storage.
+- **Option B:** Use a shared filesystem (NFS, EFS) mounted as the `strata_storage` volume.
+
+### Database
+
+All nodes connect to the same PostgreSQL instance. No special configuration is needed — just ensure all nodes have the same database connection variables.
+
+### Upgrade Strategy
+
+Upgrade nodes one at a time (rolling update). Migrations run automatically when the web server container starts. The jobs container does not run migrations.

@@ -1,0 +1,168 @@
+# Environment Variables
+
+Complete reference for all environment variables supported by Strata Server. Variables marked as **Required** must be set for the application to start. All others have sensible defaults and can be configured as needed.
+
+## Database (Required)
+
+These connect Strata to your PostgreSQL instance. Strata uses four databases (primary, queue, cache, cable) and all share the same connection credentials.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DB_HOST` | Yes | `localhost` | PostgreSQL hostname or IP address |
+| `DB_PORT` | No | `5432` | PostgreSQL port |
+| `DB_USERNAME` | No | `postgres` | PostgreSQL username |
+| `DB_PASSWORD` | No | `postgres` | PostgreSQL password |
+
+:::info
+The database user needs `CREATEDB` privilege for Strata to auto-create its four databases on first start. If your user cannot create databases, create them manually — see [Manual Install](/server/manual-install#3-prepare-postgresql).
+:::
+
+## License (Required)
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `LICENSE_KEY` | Yes | — | Your Strata license key (JWT token from purchase email). Without a valid license, the application displays a "License Required" page. |
+
+## Application
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `PORT` | No | `3000` | Host port for the web UI (mapped to container port 80) |
+| `APP_HOST` | No | `localhost` | Application hostname, used in email links and URL generation |
+| `APP_PROTOCOL` | No | `https` | Protocol for generated URLs (`http` or `https`) |
+| `SECRET_KEY_BASE` | No | Auto-generated | Rails secret key for encrypting sessions, cookies, and tokens. The install script generates one automatically on first install. Set explicitly for [multi-node deployments](/server/manual-install#multi-instance-deployment). Generate with `openssl rand -hex 64`. |
+| `STRATA_VERSION` | No | `latest` | Docker image tag to use. Set to a specific version (e.g., `1.0.0`) to pin releases. |
+
+## SSL
+
+Configure these based on your reverse proxy setup. See [SSL & Reverse Proxy](/server/ssl-reverse-proxy) for detailed setup instructions.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `ASSUME_SSL` | No | `false` | Trust `X-Forwarded-Proto` header from your reverse proxy. Set to `true` when behind an SSL-terminating proxy. |
+| `FORCE_SSL` | No | `false` | Redirect HTTP requests to HTTPS. Set to `true` when using SSL. |
+
+:::tip
+Once you have a reverse proxy terminating SSL, set both `ASSUME_SSL=true` and `FORCE_SSL=true`.
+:::
+
+## Email (SMTP)
+
+SMTP configuration enables password resets, share notifications, and user invitations. **Email is optional** — if `SMTP_HOST` is not set, the application gracefully informs users to contact their system administrator when an email-dependent feature is used.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `SMTP_HOST` | No | — | SMTP server hostname (e.g., `smtp.gmail.com`, `email-smtp.us-east-1.amazonaws.com`). Setting this enables email delivery. |
+| `SMTP_PORT` | No | `587` | SMTP server port |
+| `SMTP_USERNAME` | No | — | SMTP authentication username. Leave empty if your server does not require authentication. |
+| `SMTP_PASSWORD` | No | — | SMTP authentication password |
+| `SMTP_AUTHENTICATION` | No | `plain` | Authentication method (`plain`, `login`, or `cram_md5`). Only used when `SMTP_USERNAME` is set. |
+| `SMTP_ENABLE_STARTTLS` | No | `true` | Enable STARTTLS encryption |
+| `SMTP_OPEN_TIMEOUT` | No | `5` | Connection timeout in seconds |
+| `SMTP_READ_TIMEOUT` | No | `5` | Read timeout in seconds |
+| `SMTP_RAISE_ERRORS` | No | `false` | Whether to raise exceptions on delivery failures. Set to `true` for debugging SMTP issues. |
+
+### Example: Amazon SES
+
+```bash
+SMTP_HOST=email-smtp.us-east-1.amazonaws.com
+SMTP_PORT=587
+SMTP_USERNAME=your_ses_smtp_username
+SMTP_PASSWORD=your_ses_smtp_password
+SMTP_AUTHENTICATION=login
+```
+
+### Example: Google Workspace
+
+```bash
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=noreply@yourcompany.com
+SMTP_PASSWORD=your_app_password
+```
+
+## Storage
+
+By default, Strata stores uploaded files on the local filesystem (Docker volume). For multi-node deployments or cloud storage, configure S3-compatible storage.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `STORAGE_BACKEND` | No | `local` | File storage service: `local` (Docker volume) or `s3` (S3-compatible) |
+| `AWS_ACCESS_KEY_ID` | If S3 | — | AWS access key ID (or compatible provider credentials) |
+| `AWS_SECRET_ACCESS_KEY` | If S3 | — | AWS secret access key |
+| `AWS_REGION` | If S3 | `us-east-1` | AWS region |
+| `S3_BUCKET` | If S3 | — | S3 bucket name |
+| `S3_ENDPOINT` | No | — | Custom S3 endpoint for S3-compatible services (MinIO, DigitalOcean Spaces, Backblaze B2, etc.) |
+
+### Example: AWS S3
+
+```bash
+STORAGE_BACKEND=s3
+AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+AWS_REGION=us-east-1
+S3_BUCKET=strata-uploads
+```
+
+### Example: MinIO
+
+```bash
+STORAGE_BACKEND=s3
+AWS_ACCESS_KEY_ID=minioadmin
+AWS_SECRET_ACCESS_KEY=minioadmin
+AWS_REGION=us-east-1
+S3_BUCKET=strata
+S3_ENDPOINT=http://minio.internal:9000
+```
+
+## Performance
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `RAILS_MAX_THREADS` | No | `5` | Number of threads per Puma worker process. Also sets the database connection pool size. |
+| `JOB_CONCURRENCY` | No | `1` | Number of Solid Queue job processes |
+| `RAILS_LOG_LEVEL` | No | `info` | Log verbosity: `debug`, `info`, `warn`, `error`, `fatal` |
+
+:::tip
+For a server with 4+ CPU cores and 8+ GB RAM, a good starting point is `RAILS_MAX_THREADS=5` to allow more concurrent requests per process.
+:::
+
+## Complete `.env` Example
+
+```bash
+# === Required ===
+LICENSE_KEY=eyJhbGciOiJSUzI1NiJ9...
+DB_HOST=db.internal.yourcompany.com
+DB_PORT=5432
+DB_USERNAME=strata
+DB_PASSWORD=your_secure_password
+SECRET_KEY_BASE=  # Generate with: openssl rand -hex 64
+
+# === Application ===
+PORT=3000
+APP_HOST=strata.yourcompany.com
+APP_PROTOCOL=https
+
+# === SSL (behind reverse proxy) ===
+ASSUME_SSL=true
+FORCE_SSL=true
+
+# === Email ===
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=noreply@yourcompany.com
+SMTP_PASSWORD=your_app_password
+
+# === Storage (optional, defaults to local) ===
+# STORAGE_BACKEND=s3
+# AWS_ACCESS_KEY_ID=...
+# AWS_SECRET_ACCESS_KEY=...
+# S3_BUCKET=strata-uploads
+
+# === Performance ===
+RAILS_LOG_LEVEL=info
+# RAILS_MAX_THREADS=5
+
+# === Deployment ===
+# STRATA_VERSION=1.0.0
+```

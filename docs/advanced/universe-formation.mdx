@@ -4,12 +4,15 @@ Understanding how Strata builds query paths through your semantic model.
 
 ## Overview
 
-When you deploy a semantic model, Strata's **Formation Engine** generates all possible paths from every table to every reachable field. These paths form **universes** — complete data access routes that the query planner uses to answer user queries.
+When you deploy a semantic model, Strata's **Formation Engine** generates all possible paths from every table to every reachable field. These paths form **universes** — complete, cardinality-safe data access routes that the query planner uses to answer user queries.
 
 Understanding universe formation helps you:
-- Design efficient semantic models
-- Troubleshoot why certain queries work or don't
-- Optimize query performance through relationship design
+- **Design efficient semantic models** – keep join graphs sane and avoid double-counting
+- **Understand query routing** – why a particular table/universe was chosen for a query
+- **Reason about dimensionality** – which dimensions are allowed to group a given measure
+- **Validate measure eligibility** – why some combinations of measures/dimensions are invalid
+
+If you are familiar with other tools, a Strata universe plays a role similar to a **BusinessObjects Universe** or a **Looker Explore**, but it is derived automatically from your YAML model and enforced with strict cardinality and routing rules.
 
 ## What is a Universe?
 
@@ -17,13 +20,13 @@ A **universe** is a set of paths from a single root table to all fields reachabl
 
 ```mermaid
 flowchart TD
-    subgraph Universe[Store Sales Universe]
-        SS[Store Sales<br/>Root Table]
-        SS --> D[Date Dimension]
-        SS --> C[Customer Dimension]
-        SS --> S[Store Dimension]
-        C --> CA[Customer Address]
-        CA --> ST[State Lookup]
+    subgraph StoreSalesUniverse["Store Sales Universe"]
+        SS["Store Sales (Root Table)"]
+        SS --> D["Date Dimension"]
+        SS --> C["Customer Dimension"]
+        SS --> S["Store Dimension"]
+        C --> CA["Customer Address"]
+        CA --> ST["State Lookup"]
     end
 ```
 
@@ -33,50 +36,13 @@ The Store Sales universe contains paths to:
 - All fields on Customer Address (via Customer)
 - All fields on State Lookup (via Customer → Customer Address)
 
-## Path Enumeration Algorithm
+## How Universes Are Built
 
-### Step 1: Single Table Paths
+On deploy, the Universe Formation Engine discovers all paths from each table to every reachable field by following your join definitions. It applies cardinality and measure-expansion rules so that only valid, cardinality-safe paths are available to the query planner. You don't configure paths directly—they are derived from your semantic model.
 
-First, the engine creates paths for all fields directly on each table:
+### What You Need to Know: Measure Expansion
 
-```
-Store Sales (root) → Store Quantity (measure) [path length: 0]
-Store Sales (root) → Store Sales Price (measure) [path length: 0]
-Store Sales (root) → Ticket Number (dimension) [path length: 0]
-```
-
-These are "step 0" paths — no joins required.
-
-### Step 2: Recursive Join Enumeration
-
-Next, the engine recursively follows join definitions to discover all reachable paths:
-
-```sql
--- Conceptual algorithm (simplified)
-WITH RECURSIVE paths AS (
-  -- Base case: direct fields on each table
-  SELECT table_id, field_id, '' as join_path, 0 as steps
-  FROM expressions
-  
-  UNION ALL
-  
-  -- Recursive case: extend paths via joins
-  SELECT 
-    p.table_id,           -- Keep original root table
-    e.field_id,           -- New field reached
-    p.join_path || j.id,  -- Append this join to path
-    p.steps + 1           -- Increment step count
-  FROM paths p
-  JOIN join_defs j ON p.current_table = j.left_id
-  JOIN expressions e ON j.right_id = e.table_id
-  WHERE p.steps < 30      -- Limit path length
-    AND j.id NOT IN (p.join_path)  -- Prevent cycles
-)
-```
-
-### Step 3: Measure Expansion Rules
-
-Not all paths allow measure aggregation. The engine applies rules:
+Not all paths allow measure aggregation. When you design joins, these rules determine whether measures can flow through a path (and thus whether a measure can be combined with dimensions on the other side of that join):
 
 | Join Type | Measures Expand? | Why |
 |-----------|-----------------|-----|
@@ -97,56 +63,13 @@ customer_orders:
   # Measures from Customer cannot aggregate across Orders
 ```
 
-### Step 4: Path Storage
-
-Each generated path stores:
-- `root_table_id`: Starting table
-- `field_id`: Target field
-- `joins`: Array of join_def IDs in order
-- `table_nodes`: Array of table IDs traversed
-- `cost`: Cumulative join cost
-- `tier`: Datasource tier (inherited)
+Getting cardinality and measure expansion right is what matters when you design your semantic model; the rest is handled by the engine.
 
 ## Universe Selection
 
-When a user creates a query with specific measures and dimensions, the planner must select which universe(s) to use.
+When a user creates a query with specific measures and dimensions, the planner selects which universe(s) can answer it: a universe must contain paths to **all** requested dimensions and **any** requested measures. When several universes qualify, the planner ranks them (e.g. by tier, cost, partition fit) and picks the best fit. Details are in [Semantic Routing](/advanced/semantic-routing).
 
-### Selection Algorithm
-
-```
-1. Filter universes that contain ALL requested dimensions
-2. Filter universes that contain ANY requested measures
-3. If multiple universes qualify, rank by:
-   a. Hint count (user preferences)
-   b. Dimension count (more specific = better)
-   c. Partition score (if applicable)
-   d. Tier (hot > warm > cold)
-   e. Measure count
-   f. Cost (lower = better)
-4. Select minimum set of universes needed
-```
-
-### Example: Query Resolution
-
-**Query:** Total Revenue by Customer State
-
-```
-Requested:
-- Measure: Total Revenue (on Store Sales)
-- Dimension: Customer State (on Customer Address)
-```
-
-**Universe candidates:**
-1. Store Sales universe: Has Total Revenue ✓, Can reach Customer State via joins ✓
-2. Customer universe: No Total Revenue ✗
-
-**Result:** Store Sales universe selected
-
-**Generated path:**
-```
-Store Sales → Customer → Customer Address → Customer State
-   (root)     (join 1)      (join 2)         (field)
-```
+**Example:** For a query like *Total Revenue by Customer State*, the Store Sales universe is used because it has the measure (Total Revenue) and can reach the dimension (Customer State via Customer → Customer Address). The Customer universe is not used because it doesn’t contain that measure. If you see errors like "dimension not in universe," it means no single universe has a path to all requested fields—often a join or cardinality issue in your model.
 
 ## Path Cost Calculation
 
@@ -186,46 +109,6 @@ The engine creates **blend paths** that allow queries to:
 1. Use "Sale Date" when querying Store Sales measures
 2. Use "Order Date" when querying Catalog Sales measures
 3. Automatically blend when both measure types are requested
-
-## Debugging Universe Issues
-
-### Field Not Reachable
-
-**Symptom:** Query fails with "field not in universe"
-
-**Causes:**
-1. No join path exists between tables
-2. Join path exists but measure expansion is blocked
-3. Tables are in different datasources
-
-**Solution:**
-- Check relationship definitions connect the tables
-- Add `allow_measure_expansion: true` if safe
-- Ensure tables are in the same datasource
-
-### Unexpected Query Results
-
-**Symptom:** Aggregations seem wrong (double-counting)
-
-**Causes:**
-1. `allow_measure_expansion: true` on a path that fans out
-2. Incorrect cardinality definition
-
-**Solution:**
-- Review cardinality matches actual data relationships
-- Remove `allow_measure_expansion` from risky joins
-
-### Slow Universe Formation
-
-**Symptom:** Deployment takes long time at "forming universes"
-
-**Causes:**
-1. Many tables with complex relationships
-2. Circular or near-circular join patterns
-
-**Solution:**
-- Simplify relationship graph where possible
-- Ensure no actual cycles exist (engine detects but takes time)
 
 ## Best Practices
 

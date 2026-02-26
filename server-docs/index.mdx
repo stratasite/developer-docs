@@ -1,0 +1,55 @@
+# Server Installation
+
+Strata Server is the self-hosted web application that provides self-service BI, semantic modeling, and data exploration for your organization. It is distributed as a Docker image from the GitHub Container Registry (GHCR).
+
+## Prerequisites
+
+| Requirement | Version | Notes |
+|-------------|---------|-------|
+| **Docker Engine** | 24+ | [Install Docker Engine](https://docs.docker.com/engine/install/) — Docker Desktop is not required |
+| **Docker Compose** | v2.20+ | Ships with Docker Desktop, or install the [Compose plugin](https://docs.docker.com/compose/install/) |
+| **PostgreSQL** | 18 | Your own server — AWS RDS, Azure Database, Google Cloud SQL, or self-managed |
+| **Network** | — | Outbound access to your data sources; optionally SMTP for email |
+
+## Installation Paths
+
+### Quick Install (Single Instance)
+
+Best for evaluation, small teams, or single-server deployments. The installer script handles everything:
+
+```bash
+curl -fsSL https://strata.do/server/install.sh | bash
+```
+
+See [Quick Install](/server/quick-install) for full details.
+
+### Manual / Enterprise Install
+
+Best for organizations with their own infrastructure tooling, container orchestration, or multi-node deployments. You pull the Docker image, write your own `docker-compose.yml`, and configure environment variables through your existing processes.
+
+See [Manual Install](/server/manual-install) for step-by-step instructions.
+
+## What Happens on First Start
+
+1. The container waits for PostgreSQL to be ready
+2. Four databases are created automatically (if the DB user has `CREATEDB` privilege)
+4. Schema is loaded and migrations run
+5. The application starts on port 80 inside the container
+
+Visit the application URL in your browser. On first access, you'll see the **Setup Wizard** to create your admin account. This page disappears once the first user is created.
+
+## Architecture
+
+Strata runs two containers from the same image:
+
+- **strata** — the web server (Puma). Handles HTTP requests, runs migrations on startup.
+- **jobs** — background job processor (Solid Queue). Executes queries, deployments, and scheduled tasks.
+
+Both containers share the same environment variables and a persistent storage volume. PostgreSQL is the only external dependency — no Redis, no Kafka, no additional services.
+
+## Next Steps
+
+- [Quick Install](/server/quick-install) — get running in 5 minutes
+- [Manual Install](/server/manual-install) — enterprise deployment guide
+- [Environment Variables](/server/environment-variables) — complete configuration reference
+- [Upgrading](/server/upgrading) — upgrade and rollback procedures

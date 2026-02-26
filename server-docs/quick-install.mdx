@@ -1,0 +1,102 @@
+# Quick Install
+
+The quickest way to deploy Strata on a single server. The installer script validates prerequisites, authenticates with the container registry, prompts for configuration, and starts Strata.
+
+## Run the Installer
+
+```bash
+curl -fsSL https://strata.do/server/install.sh | bash
+```
+
+By default, Strata is installed to `./strata` in the current directory. Override with:
+
+```bash
+STRATA_INSTALL_DIR=/opt/strata curl -fsSL https://strata.do/server/install.sh | bash
+```
+
+## What the Installer Does
+
+1. **Checks prerequisites** — verifies Docker 24+ and Docker Compose v2.20+ are installed
+2. **Authenticates with GHCR** — prompts for your container registry access token (provided with your license purchase)
+3. **Prompts for configuration** — collects the following:
+
+| Prompt | Required | Description |
+|--------|----------|-------------|
+| `REGISTRY_TOKEN` | Yes | Container registry access token |
+| `LICENSE_KEY` | Yes | Your Strata license key (JWT from purchase email) |
+| `DB_HOST` | Yes | PostgreSQL hostname or IP address |
+| `DB_PORT` | Yes | PostgreSQL port (default: 5432) |
+| `DB_USERNAME` | Yes | PostgreSQL username |
+| `DB_PASSWORD` | Yes | PostgreSQL password |
+| `PORT` | No | Host port for the web UI (default: 3000) |
+
+4. **Optional: SMTP configuration** — asks if you'd like to configure email delivery now. You can skip this and add it later as well.
+5. **Writes configuration** — creates `docker-compose.yml` and `.env` in the install directory
+6. **Pulls and starts** — pulls the Strata Docker image and starts the containers
+7. **Health check** — waits for the application to pass the `/up` health check
+
+## After Installation
+
+Open your browser to `http://your-server:3000` (or whichever port you chose). You'll see the Setup Wizard to create your admin account.
+
+### View Logs
+
+```bash
+cd /path/to/strata && docker compose logs -f
+```
+
+### Stop Strata
+
+```bash
+cd /path/to/strata && docker compose down
+```
+
+### Edit Configuration
+
+```bash
+nano /path/to/strata/.env
+# After editing, restart:
+docker compose up -d
+```
+
+## Upgrading
+
+Re-run the installer from your Strata install directory:
+
+```bash
+cd /path/to/strata
+curl -fsSL https://strata.do/server/install.sh | bash
+```
+
+The installer detects the existing installation, preserves your `.env`, pulls the new image, and restarts containers. Migrations run automatically on startup.
+
+## Troubleshooting
+
+### Container exits immediately
+
+Check the logs for database connection errors:
+
+```bash
+docker compose logs --tail 30 strata
+```
+
+Common causes:
+- Incorrect `DB_HOST`, `DB_PORT`, `DB_USERNAME`, or `DB_PASSWORD` in `.env`
+- PostgreSQL not accepting connections from the Docker host
+- Firewall blocking the PostgreSQL port
+
+### Health check never passes
+
+The `/up` endpoint returns HTTP 200 when the app is fully booted. On first run, database setup can take 30-60 seconds. Watch the logs:
+
+```bash
+docker compose logs -f strata
+```
+
+You should see messages like:
+```
+[Strata] Waiting for PostgreSQL...
+[Strata] PostgreSQL is ready.
+[Strata] Preparing databases...
+[Strata] Databases ready.
+```
