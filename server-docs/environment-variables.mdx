@@ -35,15 +35,15 @@ The database user needs `CREATEDB` privilege for Strata to auto-create its four 
 
 ## SSL
 
-Configure these based on your reverse proxy setup. See [SSL / Reverse Proxy](/server/manual-install#ssl--reverse-proxy).
+Configure these based on your reverse proxy setup. See [SSL & Reverse Proxy](/server/ssl-reverse-proxy) for detailed setup instructions.
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `ASSUME_SSL` | No | `true` | Trust `X-Forwarded-Proto` header from your reverse proxy. Set to `false` if not behind a proxy. |
-| `FORCE_SSL` | No | `true` | Redirect HTTP requests to HTTPS. Set to `false` if not using SSL. |
+| `ASSUME_SSL` | No | `false` | Trust `X-Forwarded-Proto` header from your reverse proxy. Set to `true` when behind an SSL-terminating proxy. |
+| `FORCE_SSL` | No | `false` | Redirect HTTP requests to HTTPS. Set to `true` when using SSL. |
 
 :::tip
-The install script defaults `ASSUME_SSL` and `FORCE_SSL` to `false` for quick evaluation setups.
+Once you have a reverse proxy terminating SSL, set both `ASSUME_SSL=true` and `FORCE_SSL=true`.
 :::
 
 ## Email (SMTP)

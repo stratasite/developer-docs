@@ -9,6 +9,7 @@ const sidebars: SidebarsConfig = {
     },
     'quick-install',
     'manual-install',
+    'ssl-reverse-proxy',
     'environment-variables',
     'upgrading',
   ],

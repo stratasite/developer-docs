@@ -145,25 +145,9 @@ Open your browser to the application URL. The Setup Wizard prompts you to create
 
 ## SSL / Reverse Proxy
 
-Strata listens on port 80 inside the container. For production deployments, place it behind a reverse proxy that terminates SSL (Nginx, Caddy, AWS ALB, Traefik, etc.).
+Strata listens on port 80 inside the container. For production deployments, place it behind a reverse proxy that terminates SSL. Set `ASSUME_SSL=true` and `FORCE_SSL=true` so Rails knows requests arrive over HTTPS.
 
-Set these environment variables (e.g. in your `.env` file or via your configuration management):
-
-```bash
-# Behind an SSL-terminating reverse proxy (recommended)
-ASSUME_SSL=true
-FORCE_SSL=true
-APP_HOST=strata.yourcompany.com
-APP_PROTOCOL=https
-```
-
-If you are not using SSL (internal network or evaluation only):
-
-```bash
-ASSUME_SSL=false
-FORCE_SSL=false
-APP_PROTOCOL=http
-```
+See [SSL & Reverse Proxy](/server/ssl-reverse-proxy) for full setup instructions, including Nginx, Caddy, and AWS ALB examples.
 
 ---
 
