@@ -175,7 +175,7 @@ SECRET_KEY_BASE=your_shared_secret_key_base_value
 
 The `strata_storage` volume stores uploaded files (when using local storage). For multi-node deployments:
 
-- **Option A:** Use S3-compatible storage (`STORAGE_BACKEND=s3`) so all nodes share the same file storage.
+- **Option A:** Use cloud storage (`STORAGE_BACKEND=amazon`, `google`, or `microsoft`) so all nodes share the same file storage.
 - **Option B:** Use a shared filesystem (NFS, EFS) mounted as the `strata_storage` volume.
 
 ### Database
