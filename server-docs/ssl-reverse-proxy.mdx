@@ -16,10 +16,10 @@ Strata uses two environment variables to control SSL behavior:
 
 | Variable | Default | What it does |
 |----------|---------|-------------|
-| `ASSUME_SSL` | `false` | Trusts the `X-Forwarded-Proto` header from your proxy. When a proxy sends `X-Forwarded-Proto: https`, Rails treats the request as HTTPS even though it arrived over HTTP. |
+| `ASSUME_SSL` | `false` | Trusts the `X-Forwarded-Proto` header from your proxy. When a proxy sends `X-Forwarded-Proto: https`, Strata treats the request as HTTPS even though it arrived over HTTP. |
 | `FORCE_SSL` | `false` | Redirects any HTTP request to HTTPS and sets `Strict-Transport-Security` (HSTS) headers. |
 
-Under the hood, these map to Rails' [`config.assume_ssl`](https://guides.rubyonrails.org/configuring.html#config-assume-ssl) and [`config.force_ssl`](https://guides.rubyonrails.org/configuring.html#config-force-ssl).
+These settings control how Strata handles proxy-forwarded HTTPS traffic.
 
 ### When to use which setting
 
@@ -30,7 +30,7 @@ Under the hood, these map to Rails' [`config.assume_ssl`](https://guides.rubyonr
 | SSL terminated at Strata itself (rare) | `false` | `true` |
 
 :::warning
-If your proxy terminates SSL but you leave `ASSUME_SSL=false`, Rails won't know requests are HTTPS. This causes redirect loops, mixed-content warnings, and broken WebSocket connections.
+If your proxy terminates SSL but you leave `ASSUME_SSL=false`, Strata won't know requests are HTTPS. This causes redirect loops, mixed-content warnings, and broken WebSocket connections.
 :::
 
 ---
@@ -90,15 +90,15 @@ The install script defaults to these values for quick evaluation setups.
 
 ### Redirect loop (ERR_TOO_MANY_REDIRECTS)
 
-Your proxy sends requests over HTTP, but `FORCE_SSL=true` tells Rails to redirect to HTTPS, which hits the proxy again as HTTP.
+Your proxy sends requests over HTTP, but `FORCE_SSL=true` tells Strata to redirect to HTTPS, which hits the proxy again as HTTP.
 
-**Fix:** Set `ASSUME_SSL=true` so Rails trusts the `X-Forwarded-Proto: https` header from your proxy. Make sure your proxy actually sends this header.
+**Fix:** Set `ASSUME_SSL=true` so Strata trusts the `X-Forwarded-Proto: https` header from your proxy. Make sure your proxy actually sends this header.
 
 ### Mixed content warnings
 
 The browser loads the page over HTTPS but some resources (CSS, JS, WebSocket) use HTTP URLs.
 
-**Fix:** Set `APP_PROTOCOL=https` and `ASSUME_SSL=true`. Rails uses these to generate correct HTTPS URLs.
+**Fix:** Set `APP_PROTOCOL=https` and `ASSUME_SSL=true`. Strata uses these to generate correct HTTPS URLs.
 
 ### WebSocket connection fails
 

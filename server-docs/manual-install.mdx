@@ -66,18 +66,14 @@ services:
     ports:
       - "${PORT:-3000}:80"
     env_file: .env
-    environment:
-      RAILS_ENV: production
     volumes:
       - strata_storage:/rails/storage
     restart: unless-stopped
 
   jobs:
     image: ghcr.io/stratasite/strata:${STRATA_VERSION:-latest}
-    command: ["./bin/rails", "solid_queue:start"]
+    command: ["./bin/jobs"]
     env_file: .env
-    environment:
-      RAILS_ENV: production
     volumes:
       - strata_storage:/rails/storage
     restart: unless-stopped
@@ -97,7 +93,10 @@ DB_HOST=your-postgres-host
 DB_PORT=5432
 DB_USERNAME=strata
 DB_PASSWORD=your_secure_password
-SECRET_KEY_BASE=  # Generate with: openssl rand -hex 64
+STRATA_SECRET_KEY_BASE=  # Generate with: openssl rand -hex 64
+STRATA_ENCRYPTION_PRIMARY_KEY=  # Generate with: openssl rand -hex 16
+STRATA_ENCRYPTION_DETERMINISTIC_KEY=  # Generate with: openssl rand -hex 16
+STRATA_ENCRYPTION_KEY_DERIVATION_SALT=  # Generate with: openssl rand -hex 16
 
 # Recommended
 APP_HOST=strata.yourcompany.com
@@ -145,7 +144,7 @@ Open your browser to the application URL. The Setup Wizard prompts you to create
 
 ## SSL / Reverse Proxy
 
-Strata listens on port 80 inside the container. For production deployments, place it behind a reverse proxy that terminates SSL. Set `ASSUME_SSL=true` and `FORCE_SSL=true` so Rails knows requests arrive over HTTPS.
+Strata listens on port 80 inside the container. For production deployments, place it behind a reverse proxy that terminates SSL. Set `ASSUME_SSL=true` and `FORCE_SSL=true` so Strata correctly handles forwarded HTTPS requests.
 
 See [SSL & Reverse Proxy](/server/ssl-reverse-proxy) for full setup instructions, including Nginx, Caddy, and AWS ALB examples.
 
@@ -155,9 +154,9 @@ See [SSL & Reverse Proxy](/server/ssl-reverse-proxy) for full setup instructions
 
 For high availability or load balancing across multiple nodes:
 
-### SECRET_KEY_BASE
+### STRATA_SECRET_KEY_BASE
 
-All nodes must share the same `SECRET_KEY_BASE`. This key encrypts sessions, cookies, and signed tokens. If nodes use different keys, users will be logged out when their request hits another node.
+All nodes must share the same `STRATA_SECRET_KEY_BASE`. This key encrypts sessions, cookies, and signed tokens. If nodes use different keys, users will be logged out when their request hits another node.
 
 Generate a shared key:
 
@@ -165,10 +164,22 @@ Generate a shared key:
 openssl rand -hex 64
 ```
 
-Set the same `SECRET_KEY_BASE` environment variable on every node — via `.env`, your orchestrator's secrets management, or however you configure environment variables:
+Set the same `STRATA_SECRET_KEY_BASE` environment variable on every node — via `.env`, your orchestrator's secrets management, or however you configure environment variables:
 
 ```bash
-SECRET_KEY_BASE=your_shared_secret_key_base_value
+STRATA_SECRET_KEY_BASE=your_shared_secret_key_base_value
+```
+
+### Strata Encryption Keys
+
+All nodes must also share the same Strata encryption keys. These keys are required for Strata data-at-rest encryption.
+
+Set the same values on every node:
+
+```bash
+STRATA_ENCRYPTION_PRIMARY_KEY=your_shared_primary_key
+STRATA_ENCRYPTION_DETERMINISTIC_KEY=your_shared_deterministic_key
+STRATA_ENCRYPTION_KEY_DERIVATION_SALT=your_shared_key_derivation_salt
 ```
 
 ### Shared Storage
