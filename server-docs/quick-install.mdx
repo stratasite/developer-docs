@@ -14,15 +14,30 @@ By default, Strata is installed to `./strata` in the current directory. Override
 STRATA_INSTALL_DIR=/opt/strata curl -fsSL https://strata.do/server/install.sh | bash
 ```
 
+## Download the Environment Template (Optional)
+
+If you want to pre-populate configuration before running the installer, download the template file:
+
+```bash
+curl -fsSL https://strata.do/server/.env.example -o .env.example
+```
+
+You can also generate it using the installer script itself:
+
+```bash
+curl -fsSL https://strata.do/server/install.sh | bash -s -- --write-env-example ./.env.example
+```
+
 ## What the Installer Does
 
 1. **Checks prerequisites** — verifies Docker 24+ and Docker Compose v2.20+ are installed
-2. **Authenticates with GHCR** — prompts for your container registry access token (provided with your license purchase)
+2. **Authenticates with GitLab Container Registry** — prompts for your registry username and token (provided with your license purchase)
 3. **Prompts for configuration** — collects the following:
 
 | Prompt | Required | Description |
 |--------|----------|-------------|
-| `REGISTRY_TOKEN` | Yes | Container registry access token |
+| `REGISTRY_USERNAME` | Yes | GitLab registry username (user/deploy token username) |
+| `REGISTRY_TOKEN` | Yes | GitLab registry token/password |
 | `LICENSE_KEY` | Yes | Your Strata license key (JWT from purchase email) |
 | `DB_HOST` | Yes | PostgreSQL hostname or IP address |
 | `DB_PORT` | Yes | PostgreSQL port (default: 5432) |
@@ -77,7 +92,7 @@ The installer detects the existing installation, preserves your `.env`, pulls th
 Check the logs for database connection errors:
 
 ```bash
-docker compose logs --tail 30 strata
+docker compose logs --tail 30 web jobs
 ```
 
 Common causes:
@@ -90,7 +105,7 @@ Common causes:
 The `/up` endpoint returns HTTP 200 when the app is fully booted. On first run, database setup can take 30-60 seconds. Watch the logs:
 
 ```bash
-docker compose logs -f strata
+docker compose logs -f web jobs
 ```
 
 You should see messages like:

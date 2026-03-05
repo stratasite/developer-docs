@@ -1,0 +1,108 @@
+# AWS ECS Manual Deployment
+
+Use this guide when your platform team prefers direct AWS console/CLI configuration instead of Terraform.
+
+## Deployment Objective
+
+Deploy Strata Server on ECS Fargate with:
+
+- A `web` service behind an Application Load Balancer
+- A `jobs` service for background processing
+- Shared runtime configuration and secrets
+
+## Prerequisites
+
+- AWS account permissions for ECS, IAM, ALB, CloudWatch, Secrets Manager
+- Existing VPC and subnets
+- Existing PostgreSQL endpoint
+- Strata image in GitLab Container Registry (`registry.gitlab.com/stratado/server:<tag>`)
+
+## 1. Prepare Runtime Configuration
+
+Define these runtime values:
+
+- `DB_HOST`, `DB_PORT`, `DB_USERNAME`
+- `APP_HOST`, `APP_PROTOCOL`
+- `ASSUME_SSL`, `FORCE_SSL`
+
+Store these secrets in AWS Secrets Manager:
+
+- `DB_PASSWORD`
+- `LICENSE_KEY`
+- `STRATA_SECRET_KEY_BASE`
+- `STRATA_ENCRYPTION_PRIMARY_KEY`
+- `STRATA_ENCRYPTION_DETERMINISTIC_KEY`
+- `STRATA_ENCRYPTION_KEY_DERIVATION_SALT`
+
+Generate Strata encryption secrets:
+
+```bash
+STRATA_SECRET_KEY_BASE=$(openssl rand -hex 64)
+STRATA_ENCRYPTION_PRIMARY_KEY=$(openssl rand -hex 16)
+STRATA_ENCRYPTION_DETERMINISTIC_KEY=$(openssl rand -hex 16)
+STRATA_ENCRYPTION_KEY_DERIVATION_SALT=$(openssl rand -hex 16)
+```
+
+Create/update AWS Secrets Manager values and reference them in task definitions/services.
+
+## 2. Create ECS Cluster
+
+Create an ECS Fargate cluster for your environment.
+
+## 3. Create Task Definitions
+
+Create two task definitions from the same image:
+
+- `web` task: default web startup command
+- `jobs` task: command `./bin/jobs`
+
+Both task definitions must include:
+
+- shared environment values
+- shared secrets references
+- CloudWatch logs configuration
+
+For `web`, configure container health check against:
+
+- `http://localhost/up`
+
+## 4. Create Services
+
+Create two services in the same cluster:
+
+- `web` service
+- `jobs` service
+
+Attach the `web` service to an ALB target group.
+
+## 5. Validate
+
+- Verify both services are stable in ECS
+- Confirm ALB endpoint is reachable
+- Check health endpoint:
+
+```bash
+curl http://<alb-dns>/up
+```
+
+- Confirm background processing logs from `jobs` service
+
+## 6. Upgrade
+
+1. Push/publish a new image tag
+2. Update task definitions to new image tag
+3. Roll out `web` and `jobs` services
+
+## 7. Rollback
+
+If needed:
+
+1. Set task definitions back to previous image tag
+2. Redeploy both services
+3. Re-validate `/up` and background jobs
+
+## Operational Notes
+
+- Keep all Strata encryption/licensing secrets identical across services and nodes.
+- Use immutable image tags for production rollouts.
+- Apply least-privilege IAM policies for task execution and secrets access.

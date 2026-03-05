@@ -1,0 +1,47 @@
+# Operations Runbook
+
+This runbook covers day-2 operations for production Strata deployments.
+
+## Health checks
+
+- Application health endpoint: `/up`
+- Verify `web` and `jobs` services are running
+
+## Logs
+
+Single-server:
+
+```bash
+docker compose logs -f web jobs
+```
+
+ECS:
+
+- Use CloudWatch logs for both services
+- Track `web` and `jobs` streams separately
+
+## Upgrade procedure
+
+1. Use a new immutable image tag
+2. Deploy `web` and `jobs` together
+3. Validate `/up` and background jobs
+
+## Rollback procedure
+
+1. Revert to previous known-good image tag
+2. Redeploy both services
+3. Validate health and job processing
+
+## Backup guidance
+
+- Backup PostgreSQL regularly
+- Backup storage volume (or cloud storage bucket) if local storage is used
+- Test restoration procedure on a non-production environment
+
+## Incident quick checklist
+
+1. Check health endpoint
+2. Check `web` logs
+3. Check `jobs` logs
+4. Check DB connectivity
+5. Verify secrets are available and unchanged

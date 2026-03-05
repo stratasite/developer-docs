@@ -7,11 +7,17 @@ const sidebars: SidebarsConfig = {
       id: 'index',
       label: 'Overview',
     },
+    'deployment-paths',
     'quick-install',
     'manual-install',
+    'aws-ecs-manual',
     'ssl-reverse-proxy',
     'environment-variables',
     'upgrading',
+    'deployment-kit-zip',
+    'operations-runbook',
+    'security-hardening',
+    'troubleshooting-enterprise',
   ],
 };
 

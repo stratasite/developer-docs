@@ -1,0 +1,41 @@
+# Choose Your Deployment Path
+
+Strata Server supports multiple deployment models so your team can choose the approach that best matches your operations, governance, and delivery speed requirements.
+
+### Automated Single-Server Deployment
+
+Use the installer when you want the fastest deployment on a single host with guided setup and minimal operational overhead.
+
+See [Quick Install](/server/quick-install).
+
+### Manual Single-Server Deployment
+
+Use manual Docker Compose setup when your team requires explicit control over host configuration, environment variables, and secrets handling.
+
+See [Manual Install](/server/manual-install).
+
+### Native AWS ECS Configuration
+
+Use manual AWS ECS setup when your platform team prefers direct AWS console/CLI configuration while following Strata runtime requirements.
+
+See [AWS ECS Manual Deployment](/server/aws-ecs-manual).
+
+## Decision Matrix
+
+| Requirement | Typical Fit |
+|---|---|
+| Fastest single-host go-live | Quick Install |
+| Explicit host-level control | Manual Install |
+| Direct AWS native configuration | AWS ECS Manual Deployment |
+
+## Common Requirements Across All Paths
+
+All paths must deploy the same application runtime contract:
+
+- Two services: `web` and `jobs`
+- Shared configuration and secrets contract
+- Availability of the official `.env.example` template
+- PostgreSQL connectivity
+- Health validation using `/up`
+
+This ensures a consistent product experience regardless of the deployment path selected.

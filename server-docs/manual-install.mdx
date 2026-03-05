@@ -1,25 +1,41 @@
 # Manual / Enterprise Install
 
-This guide is for organizations that manage their own infrastructure and prefer to configure Strata directly rather than using the installer script. This is the recommended path for enterprise deployments, container orchestration platforms, and multi-node setups.
+This guide is for organizations that manage their own infrastructure and prefer to configure Strata directly rather than using the installer script. It fits container orchestration platforms and multi-node setups where teams want explicit runtime control.
+
+## 0. Get the `.env` Template
+
+Download the official environment template and rename/copy it to `.env`:
+
+```bash
+curl -fsSL https://strata.do/server/.env.example -o .env.example
+cp .env.example .env
+```
+
+If preferred, generate the template via installer script:
+
+```bash
+curl -fsSL https://strata.do/server/install.sh | bash -s -- --write-env-example ./.env.example
+cp .env.example .env
+```
 
 ## 1. Authenticate with the Container Registry
 
-Strata is distributed as a private Docker image on GitHub Container Registry (GHCR). Use the access token provided with your license purchase:
+Strata is distributed as a private Docker image on GitLab Container Registry. Use the access token provided with your license purchase:
 
 ```bash
-echo YOUR_ACCESS_TOKEN | docker login ghcr.io -u strata-customer --password-stdin
+echo YOUR_REGISTRY_TOKEN | docker login registry.gitlab.com -u YOUR_REGISTRY_USERNAME --password-stdin
 ```
 
 ## 2. Pull the Image
 
 ```bash
-docker pull ghcr.io/stratasite/strata:latest
+docker pull registry.gitlab.com/stratado/server:latest
 ```
 
 To pin a specific version:
 
 ```bash
-docker pull ghcr.io/stratasite/strata:1.0.0
+docker pull registry.gitlab.com/stratado/server:1.0.0
 ```
 
 ## 3. Prepare PostgreSQL
@@ -61,8 +77,8 @@ Create a directory for Strata (e.g., `/opt/strata`) and add `docker-compose.yml`
 ```yaml
 # docker-compose.yml
 services:
-  strata:
-    image: ghcr.io/stratasite/strata:${STRATA_VERSION:-latest}
+  web:
+    image: registry.gitlab.com/stratado/server:${STRATA_VERSION:-latest}
     ports:
       - "${PORT:-3000}:80"
     env_file: .env
@@ -71,7 +87,7 @@ services:
     restart: unless-stopped
 
   jobs:
-    image: ghcr.io/stratasite/strata:${STRATA_VERSION:-latest}
+    image: registry.gitlab.com/stratado/server:${STRATA_VERSION:-latest}
     command: ["./bin/jobs"]
     env_file: .env
     volumes:
@@ -98,7 +114,7 @@ STRATA_ENCRYPTION_PRIMARY_KEY=  # Generate with: openssl rand -hex 16
 STRATA_ENCRYPTION_DETERMINISTIC_KEY=  # Generate with: openssl rand -hex 16
 STRATA_ENCRYPTION_KEY_DERIVATION_SALT=  # Generate with: openssl rand -hex 16
 
-# Recommended
+# Common in production
 APP_HOST=strata.yourcompany.com
 APP_PROTOCOL=https
 ```
@@ -116,7 +132,7 @@ docker compose up -d
 Watch the startup logs:
 
 ```bash
-docker compose logs -f strata
+docker compose logs -f web
 ```
 
 Expected output on first run:

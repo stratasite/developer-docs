@@ -1,0 +1,56 @@
+# Troubleshooting Enterprise Deployments
+
+## Common startup issues
+
+### Container exits on startup
+
+Check logs first:
+
+```bash
+docker compose logs --tail 50 web jobs
+```
+
+Likely causes:
+
+- Missing required secrets
+- Invalid DB credentials
+- Unreachable DB endpoint
+
+### Health check fails
+
+Validate endpoint:
+
+```bash
+curl http://<host-or-alb>/up
+```
+
+If unhealthy:
+
+- Verify `web` service status
+- Verify DB connectivity from runtime environment
+- Verify migrations completed
+
+### Jobs not processing
+
+- Confirm `jobs` service is running
+- Check `jobs` logs for queue or DB errors
+- Verify both services use the same runtime env/secrets contract
+
+### TLS redirect issues
+
+If behind proxy/load balancer, verify:
+
+- `ASSUME_SSL=true`
+- `FORCE_SSL=true`
+- Proxy forwards `X-Forwarded-Proto`
+
+## Support bundle checklist
+
+When escalating internally, provide:
+
+1. Deployment path used
+2. Image tag deployed
+3. Last deployment timestamp
+4. Recent logs from `web` and `jobs`
+5. Health endpoint result
+6. Any recent config/secret changes

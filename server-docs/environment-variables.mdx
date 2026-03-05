@@ -2,6 +2,42 @@
 
 Complete reference for all environment variables supported by Strata Server. Variables marked as **Required** must be set for the application to start. All others have sensible defaults and can be configured as needed.
 
+## Environment Template
+
+You can download the baseline template directly:
+
+```bash
+curl -fsSL https://strata.do/server/.env.example -o .env.example
+```
+
+Or generate it using the installer script:
+
+```bash
+curl -fsSL https://strata.do/server/install.sh | bash -s -- --write-env-example ./.env.example
+```
+
+Then copy it to `.env` and fill values.
+
+## Secret Generation Reference
+
+For manual and cloud deployments, generate the Strata encryption secrets before deployment.
+
+Expected formats:
+
+- `STRATA_SECRET_KEY_BASE`: hex string, 128 characters (`openssl rand -hex 64`)
+- `STRATA_ENCRYPTION_PRIMARY_KEY`: hex string, 32 characters (`openssl rand -hex 16`)
+- `STRATA_ENCRYPTION_DETERMINISTIC_KEY`: hex string, 32 characters (`openssl rand -hex 16`)
+- `STRATA_ENCRYPTION_KEY_DERIVATION_SALT`: hex string, 32 characters (`openssl rand -hex 16`)
+
+Generate all four at once:
+
+```bash
+STRATA_SECRET_KEY_BASE=$(openssl rand -hex 64)
+STRATA_ENCRYPTION_PRIMARY_KEY=$(openssl rand -hex 16)
+STRATA_ENCRYPTION_DETERMINISTIC_KEY=$(openssl rand -hex 16)
+STRATA_ENCRYPTION_KEY_DERIVATION_SALT=$(openssl rand -hex 16)
+```
+
 ## Database (Required)
 
 These connect Strata to your PostgreSQL instance. Strata uses four databases (primary, queue, cache, cable) and all share the same connection credentials.
