@@ -1,0 +1,65 @@
+# Troubleshooting Enterprise Deployments
+
+This guide applies to all supported deployment paths (single-host Docker Compose and orchestrated deployments such as AWS ECS).
+
+## Common startup issues
+
+### Container exits on startup
+
+Check runtime logs first.
+
+Docker Compose:
+
+```bash
+docker compose logs --tail 50 web worker
+```
+
+AWS ECS:
+
+- Open CloudWatch logs for both services (`web` and `worker`)
+- Review recent startup output and error events
+
+Likely causes:
+
+- Missing required secrets
+- Invalid DB credentials
+- Unreachable DB endpoint
+
+### Health check fails
+
+Validate endpoint:
+
+```bash
+curl http://<host-or-alb>/up
+```
+
+If unhealthy:
+
+- Verify `web` role status
+- Verify DB connectivity from runtime environment
+- Verify migrations completed
+
+### Background Processor Not Processing
+
+- Confirm worker processing is running (`STRATA_PROCESS_TYPE=worker`)
+- Check worker logs for queue or DB errors
+- Verify both roles use the same runtime env/secrets contract
+
+### TLS redirect issues
+
+If behind proxy/load balancer, verify:
+
+- `ASSUME_SSL=true`
+- `FORCE_SSL=true`
+- Proxy forwards `X-Forwarded-Proto`
+
+## Support bundle checklist
+
+When escalating, provide:
+
+1. Deployment path used
+2. Image tag deployed
+3. Last deployment timestamp
+4. Recent logs from `web` and `worker` roles
+5. Health endpoint result
+6. Any recent config/secret changes

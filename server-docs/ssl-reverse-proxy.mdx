@@ -35,9 +35,9 @@ If your proxy terminates SSL but you leave `ASSUME_SSL=false`, Strata won't know
 
 ---
 
-## Recommended Setup: Proxy Terminates SSL
+## Standard Setup: Proxy Terminates SSL
 
-This is the most common and recommended approach. Your proxy handles HTTPS and forwards plain HTTP to Strata.
+This is the most common approach. Your proxy handles HTTPS and forwards plain HTTP to Strata.
 
 ### What your proxy must do
 
@@ -104,7 +104,7 @@ The browser loads the page over HTTPS but some resources (CSS, JS, WebSocket) us
 
 Live query results use WebSockets via Action Cable. If your proxy doesn't pass WebSocket upgrades, queries will still work but results won't update in real time.
 
-**Fix:** Ensure your proxy passes `Upgrade` and `Connection` headers (see the Nginx example above). Most modern proxies handle this by default.
+**Fix:** Ensure your proxy passes `Upgrade` and `Connection` headers. Most modern proxies handle this by default.
 
 ### Health check fails behind proxy
 

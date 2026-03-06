@@ -1,55 +1,45 @@
 # Server Installation
 
-Strata Server is the self-hosted web application that provides self-service BI, semantic modeling, and data exploration for your organization. It is distributed as a Docker image from the GitHub Container Registry (GHCR).
+Strata Server is the self-hosted web application for semantic analytics and BI workflows. It is distributed as a private container image and supports multiple deployment approaches.
 
-## Prerequisites
+## Deployment Flow
 
-| Requirement | Version | Notes |
-|-------------|---------|-------|
-| **Docker Engine** | 24+ | [Install Docker Engine](https://docs.docker.com/engine/install/) — Docker Desktop is not required |
-| **Docker Compose** | v2.20+ | Ships with Docker Desktop, or install the [Compose plugin](https://docs.docker.com/compose/install/) |
-| **PostgreSQL** | 18 | Your own server — AWS RDS, Azure Database, Google Cloud SQL, or self-managed |
-| **Network** | — | Outbound access to your data sources; optionally SMTP for email |
+1. Start with [Choose Your Deployment Path](/server/deployment-paths)
+2. Follow the selected deployment guide
+3. Validate runtime health and background processing
 
-## Installation Paths
+## Deployment Options
 
-### Quick Install (Single Instance)
+- [Quick Install](/server/quick-install)
+- [Manual Host Deployment](/server/manual-install)
+- [AWS ECS Manual Deployment](/server/aws-ecs-manual)
 
-Best for evaluation, small teams, or single-server deployments. The installer script handles everything:
+## Runtime Architecture
 
-```bash
-curl -fsSL https://strata.do/server/install.sh | bash
-```
+Strata Server supports these runtime roles from the same container image:
 
-See [Quick Install](/server/quick-install) for full details.
+- **web**: HTTP application service
+- **worker**: background processor service
+- **all** (or unset `STRATA_PROCESS_TYPE`): runs web and worker in one container
 
-### Manual / Enterprise Install
+Recommended production topology is split services (`web` + `worker`) for independent scaling and fault isolation. Single-container `all` mode is supported for smaller environments and simplified deployments.
 
-Best for organizations with their own infrastructure tooling, container orchestration, or multi-node deployments. You pull the Docker image, write your own `docker-compose.yml`, and configure environment variables through your existing processes.
+Naming convention in this documentation:
 
-See [Manual Install](/server/manual-install) for step-by-step instructions.
+- **Role names:** `web`, `worker`, `all`
+- **Service names:** use `web` and `worker`
 
-## What Happens on First Start
+## Core Prerequisites
 
-1. The container waits for PostgreSQL to be ready
-2. Four databases are created automatically (if the DB user has `CREATEDB` privilege)
-4. Schema is loaded and migrations run
-5. The application starts on port 80 inside the container
+| Requirement | Version / Notes |
+|---|---|
+| Docker Engine | 24+ |
+| Docker Compose | v2.20+ |
+| PostgreSQL | 18 (managed or self-hosted) |
+| Network | Access to DB, registry, and storage endpoints |
 
-Visit the application URL in your browser. On first access, you'll see the **Setup Wizard** to create your admin account. This page disappears once the first user is created.
+## Next References
 
-## Architecture
-
-Strata runs two containers from the same image:
-
-- **strata** — the web server (Puma). Handles HTTP requests, runs migrations on startup.
-- **jobs** — background job processor (Solid Queue). Executes queries, deployments, and scheduled tasks.
-
-Both containers share the same environment variables and a persistent storage volume. PostgreSQL is the only external dependency — no Redis, no Kafka, no additional services.
-
-## Next Steps
-
-- [Quick Install](/server/quick-install) — get running in 5 minutes
-- [Manual Install](/server/manual-install) — enterprise deployment guide
-- [Environment Variables](/server/environment-variables) — complete configuration reference
-- [Upgrading](/server/upgrading) — upgrade and rollback procedures
+- [Environment Variables](/server/environment-variables)
+- [SSL & Reverse Proxy](/server/ssl-reverse-proxy)
+- [Upgrading](/server/upgrading)

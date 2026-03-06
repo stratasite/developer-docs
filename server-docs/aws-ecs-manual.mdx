@@ -1,0 +1,124 @@
+# AWS ECS Manual Deployment
+
+Use this guide to deploy Strata Server on AWS ECS with direct console or CLI configuration.
+
+## Deployment Objective
+
+Deploy Strata Server on ECS Fargate with:
+
+- A `web` service behind an Application Load Balancer
+- A `worker` service for background processing
+- Shared runtime configuration and secrets
+
+## Prerequisites
+
+- AWS account permissions for ECS, IAM, ALB, CloudWatch, Secrets Manager
+- Existing VPC and subnets
+- Existing PostgreSQL endpoint
+- Access to a Strata Server image tag in your approved registry (`registry.gitlab.com/stratado/server:<tag>` by default)
+
+## 1. Prepare Runtime Configuration
+
+Define these runtime values:
+
+- `DB_HOST`, `DB_PORT`, `DB_USERNAME`
+- `APP_HOST`, `APP_PROTOCOL`
+- `ASSUME_SSL`, `FORCE_SSL`
+- `STRATA_PROCESS_TYPE`
+
+Store these secrets in AWS Secrets Manager:
+
+- `DB_PASSWORD`
+- `LICENSE_KEY`
+- `STRATA_SECRET_KEY_BASE`
+- `STRATA_ENCRYPTION_PRIMARY_KEY`
+- `STRATA_ENCRYPTION_DETERMINISTIC_KEY`
+- `STRATA_ENCRYPTION_KEY_DERIVATION_SALT`
+
+Generate Strata encryption secrets:
+
+```bash
+STRATA_SECRET_KEY_BASE=$(openssl rand -hex 64)
+STRATA_ENCRYPTION_PRIMARY_KEY=$(openssl rand -hex 16)
+STRATA_ENCRYPTION_DETERMINISTIC_KEY=$(openssl rand -hex 16)
+STRATA_ENCRYPTION_KEY_DERIVATION_SALT=$(openssl rand -hex 16)
+```
+
+Create/update AWS Secrets Manager values and reference them in task definitions/services.
+
+## 2. Create ECS Cluster
+
+Create an ECS Fargate cluster for your environment.
+
+## 3. Create Task Definitions
+
+The same image supports all runtime modes:
+
+- `STRATA_PROCESS_TYPE=web` -> web only
+- `STRATA_PROCESS_TYPE=worker` -> worker only
+- `STRATA_PROCESS_TYPE=all` (or unset) -> web + worker in one task
+
+For production, use split services:
+
+- `web` task definition: set `STRATA_PROCESS_TYPE=web`
+- `worker` task definition: set `STRATA_PROCESS_TYPE=worker`
+
+Both task definitions should include:
+
+- shared environment values
+- shared secrets references
+- CloudWatch logs configuration
+
+For `web`, configure container health check against:
+
+- `http://localhost/up`
+
+### ECS Quick-Create / Express Flow
+
+If your workflow only asks for image URL plus environment variables, deploy a single service first:
+
+- Do not set `STRATA_PROCESS_TYPE` (or set `all`) to run both processes in one task.
+- This is valid for evaluation and small environments.
+
+For production, create a second service and split roles (`web` and `worker`) for independent scaling.
+
+## 4. Create Services
+
+Create two services in the same cluster:
+
+- `web` service
+- `worker` service
+
+Attach the `web` service to an ALB target group.
+
+## 5. Validate
+
+- Verify both services are stable in ECS
+- Confirm ALB endpoint is reachable
+- Check health endpoint:
+
+```bash
+curl http://<alb-dns>/up
+```
+
+- Confirm background processing logs from `worker` service
+
+## 6. Upgrade
+
+1. Select the target Strata image tag for the upgrade
+2. Update task definitions to reference the new image tag
+3. Roll out `web` and `worker` services
+
+## 7. Rollback
+
+If needed:
+
+1. Set task definitions back to previous image tag
+2. Redeploy both services
+3. Re-validate `/up` and background processor activity
+
+## Operational Notes
+
+- Keep all Strata encryption/licensing secrets identical across services and nodes.
+- Use immutable image tags for production rollouts.
+- Apply least-privilege IAM policies for task execution and secrets access.

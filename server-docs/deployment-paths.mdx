@@ -1,0 +1,41 @@
+# Choose Your Deployment Path
+
+Strata Server supports multiple deployment models so your team can choose the approach that best matches your operations, governance, and delivery speed requirements.
+
+### Quick Install (Single Host)
+
+Use the installer when you want the fastest deployment on a single host with guided setup and minimal operational overhead.
+
+See [Quick Install](/server/quick-install).
+
+### Manual Host Deployment (VM / On-Prem)
+
+Use manual Docker Compose setup on a raw Linux host (cloud VM or on-prem server) when your team requires explicit control over host configuration, environment variables, and secrets handling.
+
+See [Manual Host Deployment](/server/manual-install).
+
+### Native AWS ECS Configuration
+
+Use manual AWS ECS setup when your platform team prefers direct AWS console/CLI configuration while following Strata runtime requirements.
+
+See [AWS ECS Manual Deployment](/server/aws-ecs-manual).
+
+## Decision Matrix
+
+| Requirement | Typical Fit |
+|---|---|
+| Fastest single-host go-live | Quick Install |
+| Explicit control on a raw VM/server host | Manual Host Deployment |
+| Direct AWS native configuration | AWS ECS Manual Deployment |
+
+## Common Requirements Across All Paths
+
+All paths must deploy the same application runtime contract:
+
+- Runtime role selection with `STRATA_PROCESS_TYPE` (`web`, `worker`, or `all`)
+- Shared configuration and secrets contract across all instances
+- Ability to generate `.env` locally via `env.sh`
+- PostgreSQL connectivity
+- Health validation using `/up`
+
+For production, run separate `web` and `worker` services from the same image. For smaller deployments, `STRATA_PROCESS_TYPE=all` (or unset) is supported to run both roles in one container.
