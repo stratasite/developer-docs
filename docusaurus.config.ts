@@ -21,7 +21,7 @@ const logoPath = 'img/logo.svg';
 
 const config: Config = {
   title: 'Strata Docs',
-  tagline: 'Documentation for Strata — semantic layer platform',
+  tagline: 'Documentation for Strata — Semantic Layer powered Business Intelligence Platform',
   favicon: 'img/favicon.svg',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
@@ -60,8 +60,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          // Serve docs at baseUrl root (no /docs/ prefix in URL)
-          routeBasePath: '/',
+          routeBasePath: 'developer-guide',
         },
         blog: false,
         theme: {
@@ -81,7 +80,7 @@ const config: Config = {
       {
         id: 'server',
         path: 'server-docs',
-        routeBasePath: 'server',
+        routeBasePath: 'self-hosting',
         sidebarPath: './server-sidebars.ts',
       },
     ],
@@ -92,7 +91,7 @@ const config: Config = {
         language: ['en'],
         indexDocs: true,
         indexBlog: false,
-        docsRouteBasePath: '/',
+        docsRouteBasePath: '/developer-guide',
         highlightSearchTermsOnTargetPage: true,
       },
     ],
@@ -116,16 +115,21 @@ const config: Config = {
       items: [
         {
           type: 'doc',
-          docId: 'getting-started/index',
-          label: 'Developer Docs',
+          docId: 'overview',
+          label: 'Developer Guide',
           position: 'left',
         },
         {
           type: 'doc',
           docId: 'index',
-          label: 'Server Docs',
+          label: 'Self-Hosting Guide',
           position: 'left',
           docsPluginId: 'server',
+        },
+        {
+          to: 'web-ui',
+          label: 'Web UI Guide',
+          position: 'left',
         },
       ],
     },
@@ -133,28 +137,37 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'Developer Docs',
+          title: 'Developer Guide',
           items: [
             {
               label: 'Getting Started',
-              to: 'getting-started/installation',
+              to: 'developer-guide/getting-started/installation',
             },
             {
               label: 'CLI Reference',
-              to: 'cli',
+              to: 'developer-guide/cli',
             },
           ],
         },
         {
-          title: 'Server',
+          title: 'Self-Hosting Guide',
           items: [
             {
-              label: 'Server Installation',
-              to: 'server',
+              label: 'Overview',
+              to: 'self-hosting',
             },
             {
               label: 'Environment Variables',
-              to: 'server/environment-variables',
+              to: 'self-hosting/environment-variables',
+            },
+          ],
+        },
+        {
+          title: 'Web UI Guide',
+          items: [
+            {
+              label: 'Coming soon',
+              to: 'web-ui',
             },
           ],
         },

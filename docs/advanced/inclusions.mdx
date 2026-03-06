@@ -4,7 +4,7 @@ Force multi-level calculations with dimension inclusions.
 
 ## Overview
 
-Inclusions solve a critical problem: **computing correct averages and medians when counts per group are uneven**. They force calculations at a finer grain (by including extra dimensions) before rolling up to the final result. This is the opposite direction to [exclusions](/advanced/exclusions), which remove dimensions from calculations.
+Inclusions solve a critical problem: **computing correct averages and medians when counts per group are uneven**. They force calculations at a finer grain (by including extra dimensions) before rolling up to the final result. This is the opposite direction to [exclusions](/developer-guide/advanced/exclusions), which remove dimensions from calculations.
 
 Inclusion measures enable multi-level aggregations like medians, percentiles, and other complex calculations that require intermediate grouping.
 
@@ -232,6 +232,6 @@ Multi-inclusion support is experimental; verify behavior in your environment or 
 
 ## Next Steps
 
-- Learn about [exclusions](/advanced/exclusions)
-- Explore [snapshot measures](/semantic-model/fields/measures/snapshot)
-- Read about [window decorators](/advanced/decorators/window)
+- Learn about [exclusions](/developer-guide/advanced/exclusions)
+- Explore [snapshot measures](/developer-guide/semantic-model/fields/measures/snapshot)
+- Read about [window decorators](/developer-guide/advanced/decorators/window)

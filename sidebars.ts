@@ -5,11 +5,14 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
  */
 const sidebars: SidebarsConfig = {
   docsSidebar: [
-    // 1. Installation and Setup (highest priority)
+    {
+      type: 'doc',
+      id: 'overview',
+      label: 'Overview',
+    },
     {
       type: 'category',
       label: 'Getting Started',
-      link: { type: 'doc', id: 'getting-started/index' },
       items: [
         'getting-started/installation',
         'getting-started/concepts',

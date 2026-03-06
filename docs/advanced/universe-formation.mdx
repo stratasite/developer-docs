@@ -67,7 +67,7 @@ Getting cardinality and measure expansion right is what matters when you design 
 
 ## Universe Selection
 
-When a user creates a query with specific measures and dimensions, the planner selects which universe(s) can answer it: a universe must contain paths to **all** requested dimensions and **any** requested measures. When several universes qualify, the planner ranks them (e.g. by tier, cost, partition fit) and picks the best fit. Details are in [Semantic Routing](/advanced/semantic-routing).
+When a user creates a query with specific measures and dimensions, the planner selects which universe(s) can answer it: a universe must contain paths to **all** requested dimensions and **any** requested measures. When several universes qualify, the planner ranks them (e.g. by tier, cost, partition fit) and picks the best fit. Details are in [Semantic Routing](/developer-guide/advanced/semantic-routing).
 
 **Example:** For a query like *Total Revenue by Customer State*, the Store Sales universe is used because it has the measure (Total Revenue) and can reach the dimension (Customer State via Customer → Customer Address). The Customer universe is not used because it doesn’t contain that measure. If you see errors like "dimension not in universe," it means no single universe has a path to all requested fields—often a join or cardinality issue in your model.
 
@@ -120,6 +120,6 @@ The engine creates **blend paths** that allow queries to:
 
 ## Next Steps
 
-- [Semantic Routing](/advanced/semantic-routing) — How queries select datasources
-- [Cost Optimization](/advanced/cost-optimization) — Tuning table and join costs
-- [Multi-Datasource](/advanced/multi-datasource) — Cross-datasource queries
+- [Semantic Routing](/developer-guide/advanced/semantic-routing) — How queries select datasources
+- [Cost Optimization](/developer-guide/advanced/cost-optimization) — Tuning table and join costs
+- [Multi-Datasource](/developer-guide/advanced/multi-datasource) — Cross-datasource queries

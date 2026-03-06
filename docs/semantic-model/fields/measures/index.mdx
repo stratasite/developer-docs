@@ -9,8 +9,8 @@ Measures are the quantitative fields in your semantic model. They represent metr
 ## Measure Types
 
 - **Simple measures** — Single SQL aggregation (e.g. `sum(amount)`, `count(*)`)
-- **[Compound measures](/semantic-model/fields/measures/compound)** — Expressions that reference other measures (e.g. `[Total Revenue] - [Total Cost]`)
-- **[Snapshot measures](/semantic-model/fields/measures/snapshot)** — Point-in-time values (`beginning` or `ending` of a period)
+- **[Compound measures](/developer-guide/semantic-model/fields/measures/compound)** — Expressions that reference other measures (e.g. `[Total Revenue] - [Total Cost]`)
+- **[Snapshot measures](/developer-guide/semantic-model/fields/measures/snapshot)** — Point-in-time values (`beginning` or `ending` of a period)
 
 ## Characteristics
 
@@ -41,7 +41,7 @@ Optional description.
 
 ### data_type
 
-Typically `decimal` or `integer`. See [data types](/semantic-model/fields/data-types).
+Typically `decimal` or `integer`. See [data types](/developer-guide/semantic-model/fields/data-types).
 
 ### expression
 
@@ -60,7 +60,7 @@ Hide from UI while keeping available for calculations.
 
 ### formatter
 
-Apply formatting. [Formatters →](/semantic-model/fields/formatters)
+Apply formatting. [Formatters →](/developer-guide/semantic-model/fields/formatters)
 
 ### synonyms
 
@@ -75,15 +75,15 @@ synonyms:
 
 ### snapshot
 
-For point-in-time measures: `ending` or `beginning`. Table must have `snapshot_date`. [Snapshot measures →](/semantic-model/fields/measures/snapshot)
+For point-in-time measures: `ending` or `beginning`. Table must have `snapshot_date`. [Snapshot measures →](/developer-guide/semantic-model/fields/measures/snapshot)
 
 ### exclusion_type / exclusions
 
-Exclude certain dimensions. [Exclusions →](/advanced/exclusions)
+Exclude certain dimensions. [Exclusions →](/developer-guide/advanced/exclusions)
 
 ### inclusions
 
-Force calculation at a lower level before rolling up. [Inclusions →](/advanced/inclusions)
+Force calculation at a lower level before rolling up. [Inclusions →](/developer-guide/advanced/inclusions)
 
 ## Aggregation Functions
 
@@ -177,7 +177,7 @@ Force calculation at a lower level before rolling up. [Inclusions →](/advanced
     sql: sum(profit) / sum(revenue)
 ```
 
-For ratios that reference other **measures** by name, use [compound measures](/semantic-model/fields/measures/compound).
+For ratios that reference other **measures** by name, use [compound measures](/developer-guide/semantic-model/fields/measures/compound).
 
 ### Complex Calculation
 
@@ -201,9 +201,9 @@ For ratios that reference other **measures** by name, use [compound measures](/s
 
 ## Next Steps
 
-- [Compound measures](/semantic-model/fields/measures/compound) - Expressions referencing other measures
-- [Snapshot measures](/semantic-model/fields/measures/snapshot) - Point-in-time values
-- [Dimensions](/semantic-model/fields/dimensions)
-- [Data types](/semantic-model/fields/data-types)
-- [Formatters](/semantic-model/fields/formatters)
-- [Expressions](/semantic-model/expressions/sql)
+- [Compound measures](/developer-guide/semantic-model/fields/measures/compound) - Expressions referencing other measures
+- [Snapshot measures](/developer-guide/semantic-model/fields/measures/snapshot) - Point-in-time values
+- [Dimensions](/developer-guide/semantic-model/fields/dimensions)
+- [Data types](/developer-guide/semantic-model/fields/data-types)
+- [Formatters](/developer-guide/semantic-model/fields/formatters)
+- [Expressions](/developer-guide/semantic-model/expressions/sql)

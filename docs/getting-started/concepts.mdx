@@ -120,7 +120,7 @@ Every fact table in your model has a **grain** — the level of detail at which 
 
 Strata’s universe formation and routing logic assume that:
 
-- Joins between tables respect their true cardinality (see [Cardinality](/semantic-model/relationships/cardinality)).
+- Joins between tables respect their true cardinality (see [Cardinality](/developer-guide/semantic-model/relationships/cardinality)).
 - Many-to-many joins are modeled explicitly via bridge tables rather than hidden in a single relationship.
 
 If two facts live at incompatible grains (for example, one is “daily inventory” and the other is “per‑transaction sales”), Strata will:
@@ -191,8 +191,8 @@ my-project/
 
 ## Next Steps
 
-- [Key terms and when to use what](/getting-started/glossary) — Glossary and decision guide
-- Learn how to [create tables](/cli/tables)
-- Understand [field types and expressions](/semantic-model/fields-and-types)
-- Explore [relationships](/cli/relationships)
-- Read about [universe formation](/advanced/universe-formation) and [advanced features](/advanced)
+- [Key terms and when to use what](/developer-guide/getting-started/glossary) — Glossary and decision guide
+- Learn how to [create tables](/developer-guide/cli/tables)
+- Understand [field types and expressions](/developer-guide/semantic-model/fields-and-types)
+- Explore [relationships](/developer-guide/cli/relationships)
+- Read about [universe formation](/developer-guide/advanced/universe-formation) and [advanced features](/developer-guide/advanced)

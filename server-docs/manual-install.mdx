@@ -13,7 +13,7 @@ Supported targets include:
 Generate `.env` with auto-generated Strata secrets:
 
 ```bash
-curl -fsSL https://strata.do/server/env.sh | bash -s -- ./.env
+curl -fsSL https://strata.do/self-hosting/env.sh | bash -s -- ./.env
 ```
 
 ## 1. Authenticate with the Container Registry
@@ -118,7 +118,7 @@ APP_HOST=strata.yourcompany.com
 APP_PROTOCOL=https
 ```
 
-See [Environment Variables](/server/environment-variables) for the complete reference.
+See [Environment Variables](/self-hosting/environment-variables) for the complete reference.
 
 ## 6. Start Strata
 
@@ -160,7 +160,7 @@ Open the application URL and complete the Setup Wizard to create the first admin
 
 Strata listens on port 80 inside the container. For production deployments, place it behind a reverse proxy that terminates SSL. Set `ASSUME_SSL=true` and `FORCE_SSL=true` so Strata correctly handles forwarded HTTPS requests.
 
-See [SSL & Reverse Proxy](/server/ssl-reverse-proxy) for full setup instructions, including Nginx, Caddy, and AWS ALB examples.
+See [SSL & Reverse Proxy](/self-hosting/ssl-reverse-proxy) for full setup instructions, including Nginx, Caddy, and AWS ALB examples.
 
 ---
 

@@ -616,7 +616,7 @@ function readDocsRecursive(
 
       const urlPath = relPath.replace(/\.(md|mdx)$/, '').replace(/\\/g, '/');
       const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-      const url = `${cleanBaseUrl}/${urlPath}`;
+      const url = `${cleanBaseUrl}/developer-guide/${urlPath}`;
 
       const title =
         (frontmatter.title as string) ||
@@ -665,7 +665,9 @@ function groupDocsBySection(docs: DocFile[], baseUrl: string): Section[] {
     if (!sectionsMap.has(sectionId)) {
       const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
       const sectionUrl =
-        doc.section === 'root' ? cleanBaseUrl : `${cleanBaseUrl}/${sectionId}`;
+        doc.section === 'root'
+          ? `${cleanBaseUrl}/developer-guide`
+          : `${cleanBaseUrl}/developer-guide/${sectionId}`;
 
       sectionsMap.set(sectionId, {
         id: sectionId,

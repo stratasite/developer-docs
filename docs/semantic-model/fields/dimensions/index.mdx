@@ -44,13 +44,13 @@ description: Full name of the customer
 
 ### data_type
 
-The data type of the dimension. See [data types](/semantic-model/fields/data-types).
+The data type of the dimension. See [data types](/developer-guide/semantic-model/fields/data-types).
 
 ```yaml
 data_type: string
 ```
 
-For **date and date_time** dimensions, including grains and filtering patterns, see [Date and DateTime dimensions](/semantic-model/fields/dimensions/date-time).
+For **date and date_time** dimensions, including grains and filtering patterns, see [Date and DateTime dimensions](/developer-guide/semantic-model/fields/dimensions/date-time).
 
 ### expression
 
@@ -61,7 +61,7 @@ expression:
   sql: customer_name
 ```
 
-[Learn about expressions →](/semantic-model/expressions/sql)
+[Learn about expressions →](/developer-guide/semantic-model/expressions/sql)
 
 ## Optional Properties
 
@@ -89,7 +89,7 @@ Apply formatting (overrides display_type).
 formatter: currency_usd  # currency_usd, percent, thousands, millions, billions, custom
 ```
 
-[Learn about formatters →](/semantic-model/fields/formatters)
+[Learn about formatters →](/developer-guide/semantic-model/fields/formatters)
 
 ### disable_value_listing
 
@@ -126,7 +126,7 @@ synonyms:
 
 ### extended_blend_group
 
-For dimensions that should blend across tables in queries, set the same `extended_blend_group` on each. See [Extended blending](/semantic-model/expressions/extended-blending) and [Extended blending groups](/advanced/extended-blending-groups).
+For dimensions that should blend across tables in queries, set the same `extended_blend_group` on each. See [Extended blending](/developer-guide/semantic-model/expressions/extended-blending) and [Extended blending groups](/developer-guide/advanced/extended-blending-groups).
 
 When you use table or entity generation templates (for example, from the CLI or a UI), ensure the template exposes a way to **assign a dimension to one or more extended blend groups** so that blend groups can be configured without editing raw YAML by hand.
 
@@ -156,7 +156,7 @@ Rules:
 
 - Complex dimensions may reference **only dimensions**, not measures.
 - All referenced dimensions must be reachable in the same **universe** as the complex dimension (so they can be grouped together).
-- Evaluation happens at query time, similar to [compound measures](/semantic-model/fields/measures/compound).
+- Evaluation happens at query time, similar to [compound measures](/developer-guide/semantic-model/fields/measures/compound).
 
 ### Example: Derived status label
 
@@ -251,14 +251,14 @@ Use complex dimensions when you want to:
 1. **Use descriptive names** - Business-friendly dimension names
 2. **Add descriptions** - Help users understand dimensions
 3. **Disable value listing** for high-cardinality dimensions (IDs, timestamps)
-4. **Set grains for date/datetime** - See [Date and DateTime dimensions](/semantic-model/fields/dimensions/date-time)
+4. **Set grains for date/datetime** - See [Date and DateTime dimensions](/developer-guide/semantic-model/fields/dimensions/date-time)
 5. **Mark primary keys** - Improve query optimization
 6. **Use appropriate data types** - Match database column types
 
 ## Next Steps
 
-- [Date and DateTime dimensions](/semantic-model/fields/dimensions/date-time) - Grains, formatting, and date-specific patterns
-- [Measures](/semantic-model/fields/measures)
-- [Data types](/semantic-model/fields/data-types)
-- [Formatters](/semantic-model/fields/formatters)
-- [Expressions](/semantic-model/expressions/sql)
+- [Date and DateTime dimensions](/developer-guide/semantic-model/fields/dimensions/date-time) - Grains, formatting, and date-specific patterns
+- [Measures](/developer-guide/semantic-model/fields/measures)
+- [Data types](/developer-guide/semantic-model/fields/data-types)
+- [Formatters](/developer-guide/semantic-model/fields/formatters)
+- [Expressions](/developer-guide/semantic-model/expressions/sql)

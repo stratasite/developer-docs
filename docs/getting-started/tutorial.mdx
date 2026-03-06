@@ -13,8 +13,8 @@ By the end of this tutorial you will have:
 ## Prerequisites
 
 - **Ruby 3.4.4+** and **Git** installed
-- **Strata CLI** installed ([Installation](/getting-started/installation))
-- Familiarity with [Core concepts](/getting-started/concepts) (tables, relationships, datasources)
+- **Strata CLI** installed ([Installation](/developer-guide/getting-started/installation))
+- Familiarity with [Core concepts](/developer-guide/getting-started/concepts) (tables, relationships, datasources)
 
 ## Step 1: Set Up DuckDB with TPC-DS Data
 
@@ -98,7 +98,7 @@ tpcds:
   file: /path/to/your/tpcds.duckdb
 ```
 
-Replace `/path/to/your/tpcds.duckdb` with the actual path to the `tpcds.duckdb` file you created in Step 1. For more options, see the [DuckDB adapter](/semantic-model/adapters/duckdb) reference.
+Replace `/path/to/your/tpcds.duckdb` with the actual path to the `tpcds.duckdb` file you created in Step 1. For more options, see the [DuckDB adapter](/developer-guide/semantic-model/adapters/duckdb) reference.
 
 ## Step 4: Test the Connection
 
@@ -146,7 +146,7 @@ Replace `https://your-strata-server.com` with the URL of your Strata server (e.g
 api_key: your_api_key_here
 ```
 
-Get the API key from your Strata web app: open your project, go to **Settings → API Keys**, and create or copy a key. See [Deployment](/cli/deployment) for more.
+Get the API key from your Strata web app: open your project, go to **Settings → API Keys**, and create or copy a key. See [Deployment](/developer-guide/cli/deployment) for more.
 
 ### 6b. Run Audit on the Existing Model
 
@@ -1084,7 +1084,7 @@ Return to your Strata server in the browser and refresh. You should now see:
 
 Compare the before and after — your additions have expanded the semantic model to cover all four TPC-DS channels (store, catalog, inventory, and web).
 
-See [Deployment](/cli/deployment) for more details on server URL configuration, API keys, and Git requirements.
+See [Deployment](/developer-guide/cli/deployment) for more details on server URL configuration, API keys, and Git requirements.
 
 ## Summary
 
@@ -1099,7 +1099,7 @@ You have:
 
 ## Next Steps
 
-- [TPC-DS Tutorial (Examples)](/examples/tpcds-tutorial) — Deeper dive into the TPC-DS model and patterns
-- [Star schema pattern](/examples/patterns/star-schema) — How fact and dimension tables relate
-- [CLI Reference](/cli) — All Strata CLI commands
-- [Semantic Model](/semantic-model/tables) — Tables, fields, and relationships in detail
+- [TPC-DS Tutorial (Examples)](/developer-guide/examples/tpcds-tutorial) — Deeper dive into the TPC-DS model and patterns
+- [Star schema pattern](/developer-guide/examples/patterns/star-schema) — How fact and dimension tables relate
+- [CLI Reference](/developer-guide/cli) — All Strata CLI commands
+- [Semantic Model](/developer-guide/semantic-model/tables) — Tables, fields, and relationships in detail
