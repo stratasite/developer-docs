@@ -1,13 +1,13 @@
 # AWS ECS Manual Deployment
 
-Use this guide when your platform team prefers direct AWS console/CLI configuration instead of Terraform.
+Use this guide to deploy Strata Server on AWS ECS with direct console or CLI configuration.
 
 ## Deployment Objective
 
 Deploy Strata Server on ECS Fargate with:
 
 - A `web` service behind an Application Load Balancer
-- A `jobs` service for background processing
+- A `worker` service for background processing
 - Shared runtime configuration and secrets
 
 ## Prerequisites
@@ -15,7 +15,7 @@ Deploy Strata Server on ECS Fargate with:
 - AWS account permissions for ECS, IAM, ALB, CloudWatch, Secrets Manager
 - Existing VPC and subnets
 - Existing PostgreSQL endpoint
-- Strata image in GitLab Container Registry (`registry.gitlab.com/stratado/server:<tag>`)
+- Access to a Strata Server image tag in your approved registry (`registry.gitlab.com/stratado/server:<tag>` by default)
 
 ## 1. Prepare Runtime Configuration
 
@@ -24,6 +24,7 @@ Define these runtime values:
 - `DB_HOST`, `DB_PORT`, `DB_USERNAME`
 - `APP_HOST`, `APP_PROTOCOL`
 - `ASSUME_SSL`, `FORCE_SSL`
+- `STRATA_PROCESS_TYPE`
 
 Store these secrets in AWS Secrets Manager:
 
@@ -51,12 +52,18 @@ Create an ECS Fargate cluster for your environment.
 
 ## 3. Create Task Definitions
 
-Create two task definitions from the same image:
+The same image supports all runtime modes:
 
-- `web` task: default web startup command
-- `jobs` task: command `./bin/jobs`
+- `STRATA_PROCESS_TYPE=web` -> web only
+- `STRATA_PROCESS_TYPE=worker` -> worker only
+- `STRATA_PROCESS_TYPE=all` (or unset) -> web + worker in one task
 
-Both task definitions must include:
+For production, use split services:
+
+- `web` task definition: set `STRATA_PROCESS_TYPE=web`
+- `worker` task definition: set `STRATA_PROCESS_TYPE=worker`
+
+Both task definitions should include:
 
 - shared environment values
 - shared secrets references
@@ -66,12 +73,21 @@ For `web`, configure container health check against:
 
 - `http://localhost/up`
 
+### ECS Quick-Create / Express Flow
+
+If your workflow only asks for image URL plus environment variables, deploy a single service first:
+
+- Do not set `STRATA_PROCESS_TYPE` (or set `all`) to run both processes in one task.
+- This is valid for evaluation and small environments.
+
+For production, create a second service and split roles (`web` and `worker`) for independent scaling.
+
 ## 4. Create Services
 
 Create two services in the same cluster:
 
 - `web` service
-- `jobs` service
+- `worker` service
 
 Attach the `web` service to an ALB target group.
 
@@ -85,13 +101,13 @@ Attach the `web` service to an ALB target group.
 curl http://<alb-dns>/up
 ```
 
-- Confirm background processing logs from `jobs` service
+- Confirm background processing logs from `worker` service
 
 ## 6. Upgrade
 
-1. Push/publish a new image tag
-2. Update task definitions to new image tag
-3. Roll out `web` and `jobs` services
+1. Select the target Strata image tag for the upgrade
+2. Update task definitions to reference the new image tag
+3. Roll out `web` and `worker` services
 
 ## 7. Rollback
 
@@ -99,7 +115,7 @@ If needed:
 
 1. Set task definitions back to previous image tag
 2. Redeploy both services
-3. Re-validate `/up` and background jobs
+3. Re-validate `/up` and background processor activity
 
 ## Operational Notes
 

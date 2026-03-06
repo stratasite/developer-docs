@@ -1,26 +1,24 @@
-# Manual / Enterprise Install
+# Manual Host Deployment (VM / On-Prem)
 
-This guide is for organizations that manage their own infrastructure and prefer to configure Strata directly rather than using the installer script. It fits container orchestration platforms and multi-node setups where teams want explicit runtime control.
+This guide is for organizations that manage their own infrastructure and require direct control over runtime, configuration, and rollout workflows.
 
-## 0. Get the `.env` Template
+Supported targets include:
 
-Download the official environment template and rename/copy it to `.env`:
+- Linux VM or instance (AWS EC2, Azure VM, Google Compute Engine, etc.)
+- On-premises Linux server
+- Any Docker-compatible host managed by your operations team
+
+## 0. Generate a `.env` File
+
+Generate `.env` with auto-generated Strata secrets:
 
 ```bash
-curl -fsSL https://strata.do/server/.env.example -o .env.example
-cp .env.example .env
-```
-
-If preferred, generate the template via installer script:
-
-```bash
-curl -fsSL https://strata.do/server/install.sh | bash -s -- --write-env-example ./.env.example
-cp .env.example .env
+curl -fsSL https://strata.do/server/env.sh | bash -s -- ./.env
 ```
 
 ## 1. Authenticate with the Container Registry
 
-Strata is distributed as a private Docker image on GitLab Container Registry. Use the access token provided with your license purchase:
+Strata is distributed as a private Docker image. Authenticate to the registry where your organization stores the approved Strata image:
 
 ```bash
 echo YOUR_REGISTRY_TOKEN | docker login registry.gitlab.com -u YOUR_REGISTRY_USERNAME --password-stdin
@@ -28,11 +26,7 @@ echo YOUR_REGISTRY_TOKEN | docker login registry.gitlab.com -u YOUR_REGISTRY_USE
 
 ## 2. Pull the Image
 
-```bash
-docker pull registry.gitlab.com/stratado/server:latest
-```
-
-To pin a specific version:
+Use an explicit release tag for production:
 
 ```bash
 docker pull registry.gitlab.com/stratado/server:1.0.0
@@ -45,7 +39,7 @@ Strata uses four PostgreSQL databases:
 | Database | Purpose |
 |----------|---------|
 | `strata_production` | Main application data |
-| `strata_production_queue` | Background jobs (Solid Queue) |
+| `strata_production_queue` | Background processor queue (Solid Queue) |
 | `strata_production_cache` | Application cache (Solid Cache) |
 | `strata_production_cable` | WebSocket connections (Action Cable) |
 
@@ -79,6 +73,8 @@ Create a directory for Strata (e.g., `/opt/strata`) and add `docker-compose.yml`
 services:
   web:
     image: registry.gitlab.com/stratado/server:${STRATA_VERSION:-latest}
+    environment:
+      STRATA_PROCESS_TYPE: web
     ports:
       - "${PORT:-3000}:80"
     env_file: .env
@@ -86,9 +82,10 @@ services:
       - strata_storage:/rails/storage
     restart: unless-stopped
 
-  jobs:
+  worker:
     image: registry.gitlab.com/stratado/server:${STRATA_VERSION:-latest}
-    command: ["./bin/jobs"]
+    environment:
+      STRATA_PROCESS_TYPE: worker
     env_file: .env
     volumes:
       - strata_storage:/rails/storage
@@ -97,6 +94,8 @@ services:
 volumes:
   strata_storage:
 ```
+
+This split-service layout is recommended for production. For single-container deployments, run one service with `STRATA_PROCESS_TYPE=all` (or leave it unset).
 
 ## 5. Configure Environment Variables
 
@@ -154,7 +153,7 @@ curl http://localhost:3000/up
 
 ## 8. Create Your Admin Account
 
-Open your browser to the application URL. The Setup Wizard prompts you to create the first admin account. This page disappears automatically once a user exists.
+Open the application URL and complete the Setup Wizard to create the first admin account. The setup page is shown only until the first user is created.
 
 ---
 
@@ -211,4 +210,4 @@ All nodes connect to the same PostgreSQL instance. No special configuration is n
 
 ### Upgrade Strategy
 
-Upgrade nodes one at a time (rolling update). Migrations run automatically when the web server container starts. The jobs container does not run migrations.
+Upgrade nodes one at a time (rolling update). Migrations run automatically when the `web` role starts. The `worker` role does not run migrations.

@@ -1,6 +1,6 @@
 # Quick Install
 
-The quickest way to deploy Strata on a single server. The installer script validates prerequisites, authenticates with the container registry, prompts for configuration, and starts Strata.
+Fastest path to deploy Strata on a single server. The installer validates prerequisites, authenticates with the container registry, captures configuration, and starts Strata.
 
 ## Run the Installer
 
@@ -16,16 +16,10 @@ STRATA_INSTALL_DIR=/opt/strata curl -fsSL https://strata.do/server/install.sh | 
 
 ## Download the Environment Template (Optional)
 
-If you want to pre-populate configuration before running the installer, download the template file:
+If you want to pre-populate configuration before running the installer, generate `.env` first:
 
 ```bash
-curl -fsSL https://strata.do/server/.env.example -o .env.example
-```
-
-You can also generate it using the installer script itself:
-
-```bash
-curl -fsSL https://strata.do/server/install.sh | bash -s -- --write-env-example ./.env.example
+curl -fsSL https://strata.do/server/env.sh | bash -s -- ./.env
 ```
 
 ## What the Installer Does
@@ -38,21 +32,20 @@ curl -fsSL https://strata.do/server/install.sh | bash -s -- --write-env-example 
 |--------|----------|-------------|
 | `REGISTRY_USERNAME` | Yes | GitLab registry username (user/deploy token username) |
 | `REGISTRY_TOKEN` | Yes | GitLab registry token/password |
-| `LICENSE_KEY` | Yes | Your Strata license key (JWT from purchase email) |
+| `LICENSE_KEY` | Yes | Your Strata license key (JWT issued for your organization) |
 | `DB_HOST` | Yes | PostgreSQL hostname or IP address |
 | `DB_PORT` | Yes | PostgreSQL port (default: 5432) |
 | `DB_USERNAME` | Yes | PostgreSQL username |
 | `DB_PASSWORD` | Yes | PostgreSQL password |
 | `PORT` | No | Host port for the web UI (default: 3000) |
 
-4. **Optional: SMTP configuration** — asks if you'd like to configure email delivery now. You can skip this and add it later as well.
-5. **Writes configuration** — creates `docker-compose.yml` and `.env` in the install directory
-6. **Pulls and starts** — pulls the Strata Docker image and starts the containers
-7. **Health check** — waits for the application to pass the `/up` health check
+4. **Writes configuration** — creates `docker-compose.yml` and `.env` in the install directory
+5. **Pulls and starts** — pulls the Strata Docker image and starts the containers
+6. **Health check** — waits for the application to pass the `/up` health check
 
 ## After Installation
 
-Open your browser to `http://your-server:3000` (or whichever port you chose). You'll see the Setup Wizard to create your admin account.
+Open `http://your-server:3000` (or your configured port) and complete the Setup Wizard to create the first admin account.
 
 ### View Logs
 
@@ -85,6 +78,15 @@ curl -fsSL https://strata.do/server/install.sh | bash
 
 The installer detects the existing installation, preserves your `.env`, pulls the new image, and restarts containers. Migrations run automatically on startup.
 
+## Runtime Topology
+
+The installer creates two services from the same image:
+
+- `web` (application traffic)
+- `worker` (background processor)
+
+For orchestrated deployments that require a single task/container, you can run the same image with `STRATA_PROCESS_TYPE=all` (or unset) to run both roles in one runtime.
+
 ## Troubleshooting
 
 ### Container exits immediately
@@ -92,7 +94,7 @@ The installer detects the existing installation, preserves your `.env`, pulls th
 Check the logs for database connection errors:
 
 ```bash
-docker compose logs --tail 30 web jobs
+docker compose logs --tail 30 web worker
 ```
 
 Common causes:
@@ -105,7 +107,7 @@ Common causes:
 The `/up` endpoint returns HTTP 200 when the app is fully booted. On first run, database setup can take 30-60 seconds. Watch the logs:
 
 ```bash
-docker compose logs -f web jobs
+docker compose logs -f web worker
 ```
 
 You should see messages like:

@@ -14,8 +14,6 @@ const sidebars: SidebarsConfig = {
     'ssl-reverse-proxy',
     'environment-variables',
     'upgrading',
-    'deployment-kit-zip',
-    'operations-runbook',
     'security-hardening',
     'troubleshooting-enterprise',
   ],
