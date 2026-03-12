@@ -74,7 +74,7 @@ services:
   web:
     image: registry.gitlab.com/stratado/server:${STRATA_VERSION:-latest}
     ports:
-      - "${PORT:-3000}:80"
+      - "${PORT:-3000}:${STRATA_CONTAINER_PORT:-80}"
     env_file: .env
     volumes:
       - strata_storage:/rails/storage
@@ -134,7 +134,7 @@ Expected output on first run:
 Check the health endpoint:
 
 ```bash
-curl http://localhost:3000/up
+curl http://<your-host-or-ip>:<PORT>/up
 # Expect HTTP 200
 ```
 
@@ -146,7 +146,7 @@ Open the application URL and complete the Setup Wizard to create the first admin
 
 ## SSL / Reverse Proxy
 
-Strata listens on port 80 inside the container. For production deployments, place it behind a reverse proxy that terminates SSL. Set `ASSUME_SSL=true` and `FORCE_SSL=true` so Strata correctly handles forwarded HTTPS requests.
+By default, Strata listens on container port 80 (override with `STRATA_CONTAINER_PORT` if needed). For production deployments, place it behind a reverse proxy that terminates SSL. Set `ASSUME_SSL=true` and `FORCE_SSL=true` so Strata correctly handles forwarded HTTPS requests.
 
 See [SSL & Reverse Proxy](/self-hosting/ssl-reverse-proxy) for full setup instructions, including Nginx, Caddy, and AWS ALB examples.
 

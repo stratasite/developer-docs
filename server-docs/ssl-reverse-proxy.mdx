@@ -1,10 +1,7 @@
 # SSL & Reverse Proxy
 
-Most production deployments run Strata behind a reverse proxy (Nginx, Caddy, Apache, AWS ALB, Traefik, etc.) that terminates SSL. Strata itself listens on plain HTTP (port 80) inside its container — the proxy handles HTTPS on port 443 and forwards requests to Strata over HTTP.
+Most production deployments run Strata behind a reverse proxy (Nginx, Caddy, Apache, AWS ALB, Traefik, etc.) that terminates SSL. Strata itself listens on plain HTTP inside its container (default: port 80; configurable with `STRATA_CONTAINER_PORT`) — the proxy handles HTTPS on port 443 and forwards requests to Strata over HTTP.
 
-```
-Internet → [HTTPS :443] → Your Proxy → [HTTP :3000] → Strata Container (:80)
-```
 
 **SSL certificates are your responsibility.** Strata does not ship with or manage certificates. You obtain a certificate (e.g. from [Let's Encrypt](https://letsencrypt.org/), your organization's internal CA, or a commercial provider) and configure it on your proxy.
 
@@ -42,7 +39,7 @@ This is the most common approach. Your proxy handles HTTPS and forwards plain HT
 ### What your proxy must do
 
 1. **Listen on port 443** with your SSL certificate
-2. **Forward requests** to Strata on its host port (default 3000)
+2. **Forward requests** to Strata on its host port (`PORT`, default `3000`)
 3. **Set the `X-Forwarded-Proto` header** so Strata knows the original request was HTTPS
 4. **Set the `X-Forwarded-For` header** so Strata can log the real client IP
 5. **Pass WebSocket upgrades** (for live query results)
@@ -68,7 +65,7 @@ We don't maintain step-by-step proxy or certificate instructions. Use official d
 | **AWS ALB** | [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html) and [HTTPS listeners](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html). ALB sets `X-Forwarded-Proto` and `X-Forwarded-For` by default. |
 | **Traefik** | [Traefik HTTPS](https://doc.traefik.io/traefik/https/overview/) and [routers](https://doc.traefik.io/traefik/routing/routers/). |
 
-When following those guides, ensure your proxy forwards to Strata's port and sets the headers listed above.
+When following those guides, ensure your proxy forwards to Strata's host port (`PORT`) and sets the headers listed above.
 
 ---
 
@@ -110,4 +107,4 @@ Live query results use WebSockets. If your proxy doesn't pass WebSocket upgrades
 
 The `/up` health check endpoint works over plain HTTP. If your monitoring tool checks health directly (bypassing the proxy), it will get an HTTPS redirect when `FORCE_SSL=true`.
 
-**Fix:** Have your monitoring tool either follow redirects, check via the proxy, or check the container directly on port 80.
+**Fix:** Have your monitoring tool either follow redirects, check via the proxy, or check the container directly on `STRATA_CONTAINER_PORT` (default 80).
