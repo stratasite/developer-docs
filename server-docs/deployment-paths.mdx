@@ -32,10 +32,8 @@ See [AWS ECS Manual Deployment](/self-hosting/aws-ecs-manual).
 
 All paths must deploy the same application runtime contract:
 
-- Runtime role selection with `STRATA_PROCESS_TYPE` (`web`, `worker`, or `all`)
 - Shared configuration and secrets contract across all instances
 - Ability to generate `.env` locally via `env.sh`
 - PostgreSQL connectivity
 - Health validation using `/up`
 
-For production, run separate `web` and `worker` services from the same image. For smaller deployments, `STRATA_PROCESS_TYPE=all` (or unset) is supported to run both roles in one container.

@@ -6,8 +6,8 @@ This guide covers upgrades for all supported deployment paths.
 
 - Use immutable image tags.
 - Back up database and storage before upgrading.
-- Upgrade `web` and `worker` to the same image tag.
-- Migrations run from the `web` role only.
+- Upgrade all running Strata instances to the same image tag.
+- Migrations run automatically on startup.
 
 ## 1. Pre-Upgrade Backup
 
@@ -58,18 +58,16 @@ docker compose up -d
 3. Verify:
 
 ```bash
-docker compose logs -f web worker
+docker compose logs -f web
 curl http://localhost:3000/up
 ```
 
 ### AWS ECS Manual Deployment
 
 1. Select target Strata image tag.
-2. Create new task definition revisions for both services:
-- `web` service (with `STRATA_PROCESS_TYPE=web`)
-- `worker` service (with `STRATA_PROCESS_TYPE=worker`)
-3. Update ECS services to the new task definition revisions.
-4. Verify ALB `/up` and worker logs in CloudWatch.
+2. Create a new task definition revision for the Strata web service.
+3. Update the ECS service to the new task definition revision.
+4. Verify ALB `/up` and application logs in CloudWatch.
 
 ## 3. Rollback
 
@@ -87,12 +85,12 @@ docker compose up -d
 
 ### AWS ECS
 
-1. Revert `web` and `worker` services to previous task definition revisions.
-2. Verify ALB `/up` and worker logs.
+1. Revert the ECS service to the previous task definition revision.
+2. Verify ALB `/up` and application logs.
 3. If required, restore database and storage backups.
 
 ## 4. Multi-Node and HA Notes
 
-- Upgrade in rolling order, keeping at least one healthy `web` instance when possible.
+- Upgrade in rolling order, keeping at least one healthy instance when possible.
 - Keep `STRATA_SECRET_KEY_BASE` and all Strata encryption keys identical across all nodes.
-- Ensure only one migration writer at a time (via normal `web` rollout sequencing).
+- Ensure only one migration writer at a time (via normal rollout sequencing).

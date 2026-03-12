@@ -11,12 +11,12 @@ Check runtime logs first.
 Docker Compose:
 
 ```bash
-docker compose logs --tail 50 web worker
+docker compose logs --tail 50 web
 ```
 
 AWS ECS:
 
-- Open CloudWatch logs for both services (`web` and `worker`)
+- Open CloudWatch logs for the Strata service
 - Review recent startup output and error events
 
 Likely causes:
@@ -35,15 +35,15 @@ curl http://<host-or-alb>/up
 
 If unhealthy:
 
-- Verify `web` role status
+- Verify service status
 - Verify DB connectivity from runtime environment
 - Verify migrations completed
 
 ### Background Processor Not Processing
 
-- Confirm worker processing is running (`STRATA_PROCESS_TYPE=worker`)
-- Check worker logs for queue or DB errors
-- Verify both roles use the same runtime env/secrets contract
+- Check service logs for queue or DB errors
+- Verify the service is healthy
+- Verify runtime environment variables and secrets are correct
 
 ### TLS redirect issues
 
@@ -60,6 +60,6 @@ When escalating, provide:
 1. Deployment path used
 2. Image tag deployed
 3. Last deployment timestamp
-4. Recent logs from `web` and `worker` roles
+4. Recent logs from the Strata service
 5. Health endpoint result
 6. Any recent config/secret changes

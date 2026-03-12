@@ -6,8 +6,7 @@ Use this guide to deploy Strata Server on AWS ECS with direct console or CLI con
 
 Deploy Strata Server on ECS Fargate with:
 
-- A `web` service behind an Application Load Balancer
-- A `worker` service for background processing
+- A Strata web service behind an Application Load Balancer
 - Shared runtime configuration and secrets
 
 ## Prerequisites
@@ -24,7 +23,6 @@ Define these runtime values:
 - `DB_HOST`, `DB_PORT`, `DB_USERNAME`
 - `APP_HOST`, `APP_PROTOCOL`
 - `ASSUME_SSL`, `FORCE_SSL`
-- `STRATA_PROCESS_TYPE`
 
 Store these secrets in AWS Secrets Manager:
 
@@ -50,20 +48,11 @@ Create/update AWS Secrets Manager values and reference them in task definitions/
 
 Create an ECS Fargate cluster for your environment.
 
-## 3. Create Task Definitions
+## 3. Create a Task Definition
 
-The same image supports all runtime modes:
+Create one task definition for the Strata service.
 
-- `STRATA_PROCESS_TYPE=web` -> web only
-- `STRATA_PROCESS_TYPE=worker` -> worker only
-- `STRATA_PROCESS_TYPE=all` (or unset) -> web + worker in one task
-
-For production, use split services:
-
-- `web` task definition: set `STRATA_PROCESS_TYPE=web`
-- `worker` task definition: set `STRATA_PROCESS_TYPE=worker`
-
-Both task definitions should include:
+The task definition should include:
 
 - shared environment values
 - shared secrets references
@@ -73,27 +62,15 @@ For `web`, configure container health check against:
 
 - `http://localhost/up`
 
-### ECS Quick-Create / Express Flow
-
-If your workflow only asks for image URL plus environment variables, deploy a single service first:
-
-- Do not set `STRATA_PROCESS_TYPE` (or set `all`) to run both processes in one task.
-- This is valid for evaluation and small environments.
-
-For production, create a second service and split roles (`web` and `worker`) for independent scaling.
-
 ## 4. Create Services
 
-Create two services in the same cluster:
+Create the Strata service in the cluster.
 
-- `web` service
-- `worker` service
-
-Attach the `web` service to an ALB target group.
+Attach it to an ALB target group.
 
 ## 5. Validate
 
-- Verify both services are stable in ECS
+- Verify the service is stable in ECS
 - Confirm ALB endpoint is reachable
 - Check health endpoint:
 
@@ -101,20 +78,20 @@ Attach the `web` service to an ALB target group.
 curl http://<alb-dns>/up
 ```
 
-- Confirm background processing logs from `worker` service
+- Confirm normal application activity in service logs
 
 ## 6. Upgrade
 
 1. Select the target Strata image tag for the upgrade
 2. Update task definitions to reference the new image tag
-3. Roll out `web` and `worker` services
+3. Roll out the service
 
 ## 7. Rollback
 
 If needed:
 
 1. Set task definitions back to previous image tag
-2. Redeploy both services
+2. Redeploy the service
 3. Re-validate `/up` and background processor activity
 
 ## Operational Notes

@@ -16,18 +16,12 @@ Strata Server is the self-hosted web application for semantic analytics and BI w
 
 ## Runtime Architecture
 
-Strata Server supports these runtime roles from the same container image:
+Strata Server runs as a single runtime process:
 
-- **web**: HTTP application service
-- **worker**: background processor service
-- **all** (or unset `STRATA_PROCESS_TYPE`): runs web and worker in one container
+- A single Strata application service handles user traffic.
+- The same service handles asynchronous platform processing.
 
-Recommended production topology is split services (`web` + `worker`) for independent scaling and fault isolation. Single-container `all` mode is supported for smaller environments and simplified deployments.
-
-Naming convention in this documentation:
-
-- **Role names:** `web`, `worker`, `all`
-- **Service names:** use `web` and `worker`
+Scale by running more identical web service instances/tasks behind your load balancer.
 
 ## Core Prerequisites
 

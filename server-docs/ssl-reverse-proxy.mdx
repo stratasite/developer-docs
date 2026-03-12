@@ -45,7 +45,7 @@ This is the most common approach. Your proxy handles HTTPS and forwards plain HT
 2. **Forward requests** to Strata on its host port (default 3000)
 3. **Set the `X-Forwarded-Proto` header** so Strata knows the original request was HTTPS
 4. **Set the `X-Forwarded-For` header** so Strata can log the real client IP
-5. **Pass WebSocket upgrades** (for live query results via Action Cable)
+5. **Pass WebSocket upgrades** (for live query results)
 
 ### Strata configuration
 
@@ -102,7 +102,7 @@ The browser loads the page over HTTPS but some resources (CSS, JS, WebSocket) us
 
 ### WebSocket connection fails
 
-Live query results use WebSockets via Action Cable. If your proxy doesn't pass WebSocket upgrades, queries will still work but results won't update in real time.
+Live query results use WebSockets. If your proxy doesn't pass WebSocket upgrades, queries will still work but results won't update in real time.
 
 **Fix:** Ensure your proxy passes `Upgrade` and `Connection` headers. Most modern proxies handle this by default.
 
