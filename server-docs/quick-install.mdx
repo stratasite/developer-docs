@@ -45,7 +45,7 @@ curl -fsSL https://strata.do/server/env.sh | bash -s -- ./.env
 
 ## After Installation
 
-Open `http://your-server:3000` (or your configured port) and complete the Setup Wizard to create the first admin account.
+Open `http://<your-host-or-ip>:<PORT>` (or your load balancer URL) and complete the Setup Wizard to create the first admin account.
 
 ### View Logs
 
@@ -80,12 +80,11 @@ The installer detects the existing installation, preserves your `.env`, pulls th
 
 ## Runtime Topology
 
-The installer creates two services from the same image:
+The installer creates one service from the Strata image:
 
-- `web` (application traffic)
-- `worker` (background processor)
+- `web` (all runtime processing)
 
-For orchestrated deployments that require a single task/container, you can run the same image with `STRATA_PROCESS_TYPE=all` (or unset) to run both roles in one runtime.
+The runtime model is a single application service.
 
 ## Troubleshooting
 
@@ -94,7 +93,7 @@ For orchestrated deployments that require a single task/container, you can run t
 Check the logs for database connection errors:
 
 ```bash
-docker compose logs --tail 30 web worker
+docker compose logs --tail 30 web
 ```
 
 Common causes:
@@ -107,7 +106,7 @@ Common causes:
 The `/up` endpoint returns HTTP 200 when the app is fully booted. On first run, database setup can take 30-60 seconds. Watch the logs:
 
 ```bash
-docker compose logs -f web worker
+docker compose logs -f web
 ```
 
 You should see messages like:

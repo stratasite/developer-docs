@@ -39,9 +39,9 @@ Strata uses four PostgreSQL databases:
 | Database | Purpose |
 |----------|---------|
 | `strata_production` | Main application data |
-| `strata_production_queue` | Background processor queue (Solid Queue) |
-| `strata_production_cache` | Application cache (Solid Cache) |
-| `strata_production_cable` | WebSocket connections (Action Cable) |
+| `strata_production_queue` | Internal asynchronous processing metadata |
+| `strata_production_cache` | Internal application cache metadata |
+| `strata_production_cable` | Real-time connection metadata |
 
 ### Option A: Automatic Creation
 
@@ -73,19 +73,8 @@ Create a directory for Strata (e.g., `/opt/strata`) and add `docker-compose.yml`
 services:
   web:
     image: registry.gitlab.com/stratado/server:${STRATA_VERSION:-latest}
-    environment:
-      STRATA_PROCESS_TYPE: web
     ports:
-      - "${PORT:-3000}:80"
-    env_file: .env
-    volumes:
-      - strata_storage:/rails/storage
-    restart: unless-stopped
-
-  worker:
-    image: registry.gitlab.com/stratado/server:${STRATA_VERSION:-latest}
-    environment:
-      STRATA_PROCESS_TYPE: worker
+      - "${PORT:-3000}:${STRATA_CONTAINER_PORT:-80}"
     env_file: .env
     volumes:
       - strata_storage:/rails/storage
@@ -94,8 +83,7 @@ services:
 volumes:
   strata_storage:
 ```
-
-This split-service layout is recommended for production. For single-container deployments, run one service with `STRATA_PROCESS_TYPE=all` (or leave it unset).
+Strata runs as a single application service.
 
 ## 5. Configure Environment Variables
 
@@ -146,7 +134,7 @@ Expected output on first run:
 Check the health endpoint:
 
 ```bash
-curl http://localhost:3000/up
+curl http://<your-host-or-ip>:<PORT>/up
 # Expect HTTP 200
 ```
 
@@ -158,7 +146,7 @@ Open the application URL and complete the Setup Wizard to create the first admin
 
 ## SSL / Reverse Proxy
 
-Strata listens on port 80 inside the container. For production deployments, place it behind a reverse proxy that terminates SSL. Set `ASSUME_SSL=true` and `FORCE_SSL=true` so Strata correctly handles forwarded HTTPS requests.
+By default, Strata listens on container port 80 (override with `STRATA_CONTAINER_PORT` if needed). For production deployments, place it behind a reverse proxy that terminates SSL. Set `ASSUME_SSL=true` and `FORCE_SSL=true` so Strata correctly handles forwarded HTTPS requests.
 
 See [SSL & Reverse Proxy](/self-hosting/ssl-reverse-proxy) for full setup instructions, including Nginx, Caddy, and AWS ALB examples.
 
@@ -209,4 +197,4 @@ All nodes connect to the same PostgreSQL instance. No special configuration is n
 
 ### Upgrade Strategy
 
-Upgrade nodes one at a time (rolling update). Migrations run automatically when the `web` role starts. The `worker` role does not run migrations.
+Upgrade nodes one at a time (rolling update). Migrations run automatically on startup.

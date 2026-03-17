@@ -145,6 +145,18 @@ cat .strata  # (contains credentials)
      ssl: true  # Enable if server requires SSL
    ```
 
+### Datasource Authorization Error During Deployment
+
+**Symptoms:**
+```
+Datasource error: You are not authorized to perform: athena:StartQueryExecution
+Datasource error: Access denied when writing output to url: s3://...
+```
+
+**Cause:** The credentials configured for the datasource lack the required permissions. For AWS datasources like Athena, the credentials need permissions for the service itself (e.g., Athena query execution) and any dependent resources (e.g., S3 write access for query results).
+
+**Fix:** Verify the IAM user or role behind your datasource credentials has the necessary permissions. See adapter-specific docs for required permissions (e.g., [Athena](/developer-guide/semantic-model/adapters/athena#authentication)).
+
 ### Remote Credentials Not Working
 
 **Symptoms:**

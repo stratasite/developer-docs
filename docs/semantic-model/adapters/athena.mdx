@@ -57,7 +57,15 @@ athena_data:
 
 ### Option 1: IAM Role (Recommended)
 
-For EC2/ECS/Lambda, use IAM role. No explicit credentials needed.
+For EC2/ECS/Lambda deployments, use an IAM role attached to the compute environment. No explicit credentials needed — the AWS SDK picks up permissions automatically.
+
+The IAM role needs the following permissions:
+
+- **Athena** — query execution (`athena:StartQueryExecution`, `athena:GetQueryExecution`, `athena:GetQueryResults`, etc.)
+- **S3** — read/write access to the `s3_output_location` bucket (Athena writes query results here)
+- **Glue** — read access to the data catalog (if using the default AWS Glue catalog)
+
+The managed policies `AmazonAthenaFullAccess` and `AmazonS3FullAccess` cover these requirements. For tighter scoping, create a custom policy limited to your specific S3 buckets and Glue catalogs.
 
 ### Option 2: Explicit Credentials
 
@@ -66,6 +74,8 @@ Set via CLI:
 ```bash
 strata datasource auth athena_data
 ```
+
+The IAM user behind these credentials needs the same permissions listed above.
 
 ### Option 3: Environment Variables
 
