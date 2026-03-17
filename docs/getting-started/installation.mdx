@@ -52,7 +52,13 @@ If Ruby is missing or too old, install or upgrade using the instructions below f
 This installs Strata CLI globally so you can run `strata` from any directory.
 
 <Tabs>
-  <TabItem value="gem" label="Gem" default>
+  <TabItem value="script" label="Shell Script (Recommended)" default>
+    ```bash
+    curl -fsSL https://strata.do/cli/install.sh | bash
+    ```
+    This script checks for Ruby and Git prerequisites, installs the CLI gem, and verifies the installation.
+  </TabItem>
+  <TabItem value="gem" label="Gem">
     ```bash
     gem install strata-cli
     ```
