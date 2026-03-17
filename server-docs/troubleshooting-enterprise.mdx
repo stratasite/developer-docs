@@ -37,7 +37,7 @@ If unhealthy:
 
 - Verify service status
 - Verify DB connectivity from runtime environment
-- Verify migrations completed
+- Verify database setup completed
 
 ### Background Processor Not Processing
 
@@ -52,6 +52,39 @@ If behind proxy/load balancer, verify:
 - `ASSUME_SSL=true`
 - `FORCE_SSL=true`
 - Proxy forwards `X-Forwarded-Proto`
+
+## AWS ECS
+
+### EFS mount fails or permission errors
+
+- Verify the EFS access point uses the correct POSIX user UID/GID with root directory `/storage`
+- Verify the EFS security group allows inbound **NFS (TCP 2049)** from the ECS task security group
+- Confirm transit encryption is enabled in the task definition volume configuration
+
+### Port binding failure on Fargate
+
+If the container exits immediately with a port binding error, set `STRATA_CONTAINER_PORT=8080`. Non-root containers on Fargate cannot bind to ports below 1024.
+
+### Cannot pull container image
+
+- Verify the registry credentials secret is correctly formatted as JSON: `{"username":"...","password":"..."}`
+- Verify the secret ARN is referenced in the task definition's **Private registry** configuration
+- Verify the task execution role has `secretsmanager:GetSecretValue` permission for the registry secret
+
+### Debugging with ECS Exec
+
+Enable ECS Exec on the service to open a shell session in a running container:
+
+```bash
+aws ecs execute-command \
+  --cluster your-cluster \
+  --task your-task-id \
+  --container your-container-name \
+  --interactive \
+  --command "/bin/sh"
+```
+
+The task role needs `ssmmessages` permissions. See [AWS documentation](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html) for setup details.
 
 ## Support bundle checklist
 

@@ -14,11 +14,11 @@ Use manual Docker Compose setup on a raw Linux host (cloud VM or on-prem server)
 
 See [Manual Host Deployment](/self-hosting/manual-install).
 
-### Native AWS ECS Configuration
+### AWS ECS (Express Mode)
 
-Use manual AWS ECS setup when your platform team prefers direct AWS console/CLI configuration while following Strata runtime requirements.
+Use AWS ECS with Express Mode for a production deployment with auto-provisioned load balancing, SSL, networking, and auto-scaling. The Strata container is self-initializing — it creates databases and runs all setup on first start.
 
-See [AWS ECS Manual Deployment](/self-hosting/aws-ecs-manual).
+See [Deploy Strata on AWS ECS](/self-hosting/aws-ecs-manual).
 
 ## Decision Matrix
 
@@ -26,7 +26,7 @@ See [AWS ECS Manual Deployment](/self-hosting/aws-ecs-manual).
 |---|---|
 | Fastest single-host go-live | Quick Install |
 | Explicit control on a raw VM/server host | Manual Host Deployment |
-| Direct AWS native configuration | AWS ECS Manual Deployment |
+| AWS-managed with auto-provisioned infrastructure | AWS ECS (Express Mode) |
 
 ## Common Requirements Across All Paths
 

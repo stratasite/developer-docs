@@ -1,101 +1,154 @@
-# AWS ECS Manual Deployment
+# Deploy Strata on AWS ECS
 
-Use this guide to deploy Strata Server on AWS ECS with direct console or CLI configuration.
-
-## Deployment Objective
-
-Deploy Strata Server on ECS Fargate with:
-
-- A Strata web service behind an Application Load Balancer
-- Shared runtime configuration and secrets
+This guide walks through deploying Strata on AWS ECS using **Express Mode** — the fastest path to a production deployment. Express Mode auto-provisions the load balancer, SSL certificate, networking, auto-scaling, and monitoring.
 
 ## Prerequisites
 
-- AWS account permissions for ECS, IAM, ALB, CloudWatch, Secrets Manager
-- Existing VPC and subnets
-- Existing PostgreSQL endpoint
-- Access to a Strata Server image tag in your approved registry (`registry.gitlab.com/stratado/server:<tag>` by default)
+- AWS account with ECS permissions
+- PostgreSQL endpoint accessible from your VPC (host, port, username, password). The database user needs `CREATEDB` privilege.
+- Strata container image registry credentials (provided with your license)
+- Strata license key (provided with purchase)
 
-## 1. Prepare Runtime Configuration
+## Step 1: Store Secrets in AWS Secrets Manager
 
-Define these runtime values:
+Open the **Secrets Manager** console and create each secret as a **Plaintext** string.
 
-- `DB_HOST`, `DB_PORT`, `DB_USERNAME`
-- `APP_HOST`, `APP_PROTOCOL`
-- `ASSUME_SSL`, `FORCE_SSL`
+### Registry credentials
 
-Store these secrets in AWS Secrets Manager:
+Store as a single JSON secret — ECS uses this to pull the Strata image:
 
-- `DB_PASSWORD`
-- `LICENSE_KEY`
-- `STRATA_SECRET_KEY_BASE`
-- `STRATA_ENCRYPTION_PRIMARY_KEY`
-- `STRATA_ENCRYPTION_DETERMINISTIC_KEY`
-- `STRATA_ENCRYPTION_KEY_DERIVATION_SALT`
-
-Generate Strata encryption secrets:
-
-```bash
-STRATA_SECRET_KEY_BASE=$(openssl rand -hex 64)
-STRATA_ENCRYPTION_PRIMARY_KEY=$(openssl rand -hex 16)
-STRATA_ENCRYPTION_DETERMINISTIC_KEY=$(openssl rand -hex 16)
-STRATA_ENCRYPTION_KEY_DERIVATION_SALT=$(openssl rand -hex 16)
+```json
+{"username":"your_registry_username","password":"your_registry_token"}
 ```
 
-Create/update AWS Secrets Manager values and reference them in task definitions/services.
+### Application secrets
 
-## 2. Create ECS Cluster
-
-Create an ECS Fargate cluster for your environment.
-
-## 3. Create a Task Definition
-
-Create one task definition for the Strata service.
-
-The task definition should include:
-
-- shared environment values
-- shared secrets references
-- CloudWatch logs configuration
-
-For `web`, configure container health check against:
-
-- `http://localhost/up`
-
-## 4. Create Services
-
-Create the Strata service in the cluster.
-
-Attach it to an ALB target group.
-
-## 5. Validate
-
-- Verify the service is stable in ECS
-- Confirm ALB endpoint is reachable
-- Check health endpoint:
+Generate the encryption secrets locally:
 
 ```bash
-curl http://<alb-dns>/up
+curl -fsSL https://strata.do/self-hosting/env.sh | bash -s -- ./.env
 ```
 
-- Confirm normal application activity in service logs
+This creates a `.env` file with all encryption secrets pre-generated. Create a separate Secrets Manager secret for each of the following, using the values from the generated `.env`:
 
-## 6. Upgrade
+| Secret name | Value |
+|---|---|
+| `DB_PASSWORD` | Your PostgreSQL password |
+| `LICENSE_KEY` | Your Strata license key |
+| `STRATA_SECRET_KEY_BASE` | From generated `.env` |
+| `STRATA_ENCRYPTION_PRIMARY_KEY` | From generated `.env` |
+| `STRATA_ENCRYPTION_DETERMINISTIC_KEY` | From generated `.env` |
+| `STRATA_ENCRYPTION_KEY_DERIVATION_SALT` | From generated `.env` |
 
-1. Select the target Strata image tag for the upgrade
-2. Update task definitions to reference the new image tag
-3. Roll out the service
+Note the ARN of each secret — you'll reference them in Step 3.
 
-## 7. Rollback
+## Step 2: Create an EFS File System
 
-If needed:
+Strata uses EFS for persistent file storage in ECS deployments.
 
-1. Set task definitions back to previous image tag
-2. Redeploy the service
-3. Re-validate `/up` and background processor activity
+1. Open the **EFS** console → **Create file system**
+2. Enable encryption at rest
+3. After creation, go to **Access points** → **Create access point**:
+   - POSIX user: UID `0`, GID `0`
+   - Root directory path: `/storage`
+   - Owner UID: `0`, Owner GID: `0`
+   - Permissions: `755`
+4. Note the **File system ID** and **Access point ID**
 
-## Operational Notes
+## Step 3: Create an ECS Express Mode Service
 
-- Keep all Strata encryption/licensing secrets identical across services and nodes.
-- Use immutable image tags for production rollouts.
-- Apply least-privilege IAM policies for task execution and secrets access.
+1. Open the **ECS** console → **Create service** (Express Mode)
+2. Fill in the basic configuration:
+   - **Image URI**: `registry.gitlab.com/stratado/server:<tag>` (use a specific release tag)
+   - **Private registry**: Enable and provide the ARN of your registry credentials secret
+   - **Task execution role**: Create new or select existing
+   - **Infrastructure role**: Create new or select existing
+
+3. Expand **Additional configuration** and set:
+
+   **Container port**: `8080`
+
+   **Health check path**: `/up`
+
+   **Environment variables** (type: Environment variable):
+
+   | Key | Value |
+   |---|---|
+   | `STRATA_CONTAINER_PORT` | `8080` |
+   | `DB_HOST` | Your PostgreSQL host |
+   | `DB_PORT` | `5432` |
+   | `DB_USERNAME` | Your PostgreSQL username |
+
+   **Secrets** (type: Secrets Manager):
+
+   | Key | Value (secret ARN) |
+   |---|---|
+   | `DB_PASSWORD` | ARN of your DB_PASSWORD secret |
+   | `LICENSE_KEY` | ARN of your LICENSE_KEY secret |
+   | `STRATA_SECRET_KEY_BASE` | ARN of your STRATA_SECRET_KEY_BASE secret |
+   | `STRATA_ENCRYPTION_PRIMARY_KEY` | ARN of your STRATA_ENCRYPTION_PRIMARY_KEY secret |
+   | `STRATA_ENCRYPTION_DETERMINISTIC_KEY` | ARN of your STRATA_ENCRYPTION_DETERMINISTIC_KEY secret |
+   | `STRATA_ENCRYPTION_KEY_DERIVATION_SALT` | ARN of your STRATA_ENCRYPTION_KEY_DERIVATION_SALT secret |
+
+   **CPU**: 2 vCPU, **Memory**: 4 GB (recommended minimum)
+
+4. Click **Create**
+
+## Step 4: Add EFS Volume
+
+Express Mode doesn't support EFS volumes in the initial setup UI, so you'll add it after creation.
+
+1. Go to **Task Definitions** → find the task definition created by Express Mode → **Create new revision**
+2. Under **Volumes**, add a volume:
+   - Volume type: **EFS**
+   - File system ID: your EFS file system ID
+   - Access point ID: your access point ID
+   - Transit encryption: **Enabled**
+3. Under **Container definitions**, edit the Strata container and add a mount point:
+   - Source volume: the volume you just created
+   - Container path: `/mnt/efs`
+4. Save the new revision
+5. Go back to your **ECS service** → **Update** → select the new task definition revision → enable **Force new deployment** → **Update service**
+
+:::warning
+The EFS security group must allow inbound **NFS (TCP 2049)** from the ECS task security group. Without this rule, the container will fail to mount the file system.
+:::
+
+## Step 5: Validate
+
+Check **CloudWatch Logs** for the Strata service. A healthy startup looks like:
+
+```
+[Strata] EFS detected at /mnt/efs
+[Strata] PostgreSQL is ready.
+[Strata] Preparing databases...
+[Strata] Databases ready.
+```
+
+Open the service URL shown in the ECS service details page. Complete the **Setup Wizard** to create your admin account.
+
+## Upgrading
+
+1. Go to **Task Definitions** → select your Strata task definition → **Create new revision**
+2. Update the image tag to the new release version
+3. Go to your **ECS service** → **Update** → select the new revision → enable **Force new deployment** → **Update service**
+
+ECS performs a rolling deployment, replacing running tasks with the new revision.
+
+## Rollback
+
+If you need to roll back, update the ECS service to use the previous task definition revision. ECS redeploys with the prior configuration.
+
+## Additional Configuration
+
+These are optional and not required for the initial deployment.
+
+**SSL** — Express Mode provisions an SSL certificate automatically. If you need to configure SSL behavior behind a custom proxy, see [SSL & Reverse Proxy](/self-hosting/ssl-reverse-proxy).
+
+**Custom domain** — Create a CNAME record pointing your domain to the ALB DNS name (shown in the ECS service details).
+
+**S3 storage instead of EFS** — Set `STORAGE_BACKEND=amazon` along with S3 credentials. See [Environment Variables](/self-hosting/environment-variables#amazon-s3--s3-compatible) for the full list.
+
+**ECS Exec for debugging** — Enable ECS Exec on the service to open a shell session in a running container for troubleshooting.
+
+**Full environment variable reference** — See [Environment Variables](/self-hosting/environment-variables).
