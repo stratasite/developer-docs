@@ -13,6 +13,7 @@ const sidebars: SidebarsConfig = {
     'aws-ecs-manual',
     'ssl-reverse-proxy',
     'environment-variables',
+    'google-oauth',
     'upgrading',
     'security-hardening',
     'troubleshooting-enterprise',
