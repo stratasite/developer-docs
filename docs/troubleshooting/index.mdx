@@ -163,13 +163,16 @@ Datasource error: Access denied when writing output to url: s3://...
 - Local `strata datasource test` works
 - Deployment fails with connection error
 
-**Cause:** Remote server has different/missing credentials
+**Cause:** Deploy overlay did not include expected `.strata` credentials, or environment-specific credentials were selected incorrectly.
 
 **Fix:**
-```bash
-# Set credentials on remote server
-strata datasource auth warehouse --remote
-```
+1. Verify local credentials exist under the datasource key in `.strata`.
+2. If using `-e`, verify `.strata.<environment>.<datasource_key>` values.
+3. Re-run deploy with the intended environment:
+   ```bash
+   strata deploy -e staging
+   ```
+4. Confirm datasource config key names match exactly between `datasources.yml` and `.strata`.
 
 ---
 

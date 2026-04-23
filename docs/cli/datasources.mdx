@@ -55,9 +55,13 @@ strata datasource auth warehouse
 
 **What happens:**
 1. The CLI prompts for credentials (username, password, API keys, etc.)
-2. Stores them in `.strata` (local) or on the server if you use `-r, --remote`
+2. Stores them in `.strata` (local, gitignored)
 
 Credentials are always kept out of version control.
+
+When you run `strata deploy`, the CLI overlays datasource credential keys from `.strata` into `datasources.yml` in-memory before uploading. The `.strata` file itself is not uploaded.
+
+With `strata deploy -e <env>`, environment-specific datasource credentials in `.strata.<env>.<datasource_key>` override root `.strata.<datasource_key>` values.
 
 ## Step 3: Test the Connection
 
@@ -147,6 +151,10 @@ api_key: your_api_key
 warehouse:
   username: user
   password: secret
+
+staging:
+  warehouse:
+    password: staging-secret
 ```
 
 ## Best Practices
