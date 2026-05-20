@@ -7,7 +7,7 @@ Understand dimensions, measures, and data types in Strata.
 After completing this guide, you will be able to:
 - Distinguish between dimensions and measures
 - Choose appropriate data types
-- Configure field properties (formatters, display types)
+- Configure field properties (format, display types)
 - Understand when to use different field options
 
 ## Dimensions vs Measures
@@ -168,22 +168,15 @@ Control how fields are rendered in the UI:
     sql: image_url
 ```
 
-### Formatters
+### Format
 
-Apply formatting to numeric values:
-
-- **currency_usd**: Format as USD currency
-- **percent**: Format as percentage
-- **thousands**: Format with thousands separator
-- **millions**: Format in millions
-- **billions**: Format in billions
-- **custom**: Custom JavaScript function using numeral.js/moment.js
+Control how values are displayed using the `format` property (shortcut string or hash). See [Field format](/developer-guide/semantic-model/fields/formatters) for types, shortcuts, and defaults.
 
 ```yaml
 - type: measure
   name: Total Revenue
   data_type: decimal
-  formatter: currency_usd
+  format: currency:2
   expression:
     sql: sum(amount)
 ```
@@ -300,7 +293,7 @@ fields:
     name: Total Revenue
     description: Sum of all order amounts
     data_type: decimal
-    formatter: currency_usd
+    format: currency:2
     synonyms:
       - total sales
       - gross revenue
@@ -323,7 +316,7 @@ fields:
 2. **Add descriptions** - Help users understand what each field represents
 3. **Set grains for dates** - Enable flexible date grouping
 4. **Disable value listing** for high-cardinality dimensions (IDs, timestamps)
-5. **Use formatters** for better UX (currency, percentages)
+5. **Use format** for better UX (currency, percentages)
 6. **Mark primary keys** - Helps with query optimization
 
 ## Next Steps

@@ -81,15 +81,15 @@ Control how the dimension is rendered.
 display_type: url  # default, html, url, email, phone_number, image
 ```
 
-### formatter
+### format
 
-Apply formatting (overrides display_type).
+Apply formatting (shortcut string or hash).
 
 ```yaml
-formatter: currency_usd  # currency_usd, percent, thousands, millions, billions, custom
+format: currency:2  # or hash: { type: currency, precision: 2 }
 ```
 
-[Learn about formatters →](/developer-guide/semantic-model/fields/formatters)
+[Learn about field format →](/developer-guide/semantic-model/fields/formatters)
 
 ### disable_value_listing
 
@@ -260,5 +260,5 @@ Use complex dimensions when you want to:
 - [Date and DateTime dimensions](/developer-guide/semantic-model/fields/dimensions/date-time) - Grains, formatting, and date-specific patterns
 - [Measures](/developer-guide/semantic-model/fields/measures)
 - [Data types](/developer-guide/semantic-model/fields/data-types)
-- [Formatters](/developer-guide/semantic-model/fields/formatters)
+- [Field format](/developer-guide/semantic-model/fields/formatters)
 - [Expressions](/developer-guide/semantic-model/expressions/sql)

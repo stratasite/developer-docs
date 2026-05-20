@@ -312,7 +312,26 @@ function generateJsonSchemas(schemaDir: string, baseUrl: string) {
             enum: ['default', 'html', 'url', 'email', 'phone_number', 'image'],
             default: 'default',
           },
-          formatter: {type: 'string'},
+          format: {
+            oneOf: [
+              {type: 'string'},
+              {
+                type: 'object',
+                required: ['type'],
+                properties: {
+                  type: {
+                    enum: ['raw', 'number', 'currency', 'percent', 'date', 'datetime', 'html', 'javascript'],
+                  },
+                  precision: {type: 'integer'},
+                  abbreviate: {type: 'boolean'},
+                  unit: {type: 'string'},
+                  pattern: {type: 'string'},
+                  template: {type: 'string'},
+                  function: {type: 'string'},
+                },
+              },
+            ],
+          },
           disable_value_listing: {type: 'boolean', default: false},
           value_list_size: {type: 'integer', minimum: 1},
           grains: {type: 'array', items: {type: 'string'}},

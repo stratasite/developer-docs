@@ -112,7 +112,7 @@ fields:
   - type: measure
     name: Total Revenue
     data_type: decimal
-    formatter: currency_usd
+    format: currency:2
     expression:
       sql: sum(order_total)
 
@@ -126,7 +126,7 @@ fields:
     name: Average Order Value
     description: Revenue per order
     data_type: decimal
-    formatter: currency_usd
+    format: currency:2
     expression:
       sql: "[Total Revenue] / nullif([Order Count], 0)"
 
@@ -242,7 +242,7 @@ Calculate customer-level metrics that span multiple fact tables:
   name: Customer Lifetime Value
   description: Total revenue from this customer
   data_type: decimal
-  formatter: currency_usd
+  format: currency:2
   expression:
     sql: "[Total Revenue]"  # Resolved via relationship
 

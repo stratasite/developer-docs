@@ -153,7 +153,7 @@ filter: apply
 - type: measure
   name: Revenue % of Total
   data_type: decimal
-  formatter: percent
+  format: percent:2
   expression:
     sql: [Revenue] / NULLIF([Revenue (All Categories)], 0)
 ```

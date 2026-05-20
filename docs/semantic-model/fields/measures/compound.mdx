@@ -78,7 +78,7 @@ fields:
   - type: measure
     name: Profit Margin
     data_type: decimal
-    formatter: percent
+    format: percent:2
     expression:
       sql: [Profit] / [Total Revenue]
 ```
@@ -89,7 +89,7 @@ You can also mix bracketed references with raw SQL functions and constants:
 - type: measure
   name: Adjusted Profit Margin
   data_type: decimal
-  formatter: percent
+  format: percent:2
   expression:
     sql: ([Profit] - COALESCE([Refunds], 0)) / NULLIF([Total Revenue], 0)
 ```

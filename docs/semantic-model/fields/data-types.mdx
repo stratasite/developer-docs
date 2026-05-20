@@ -81,7 +81,7 @@ Floating-point numbers. Use for monetary values, percentages, measurements.
 - type: measure
   name: Total Revenue
   data_type: decimal
-  formatter: currency_usd
+  format: currency:2
   expression:
     sql: sum(amount)
 ```
@@ -253,5 +253,5 @@ grains:
 
 - Learn about [dimensions](/developer-guide/semantic-model/fields/dimensions)
 - Learn about [measures](/developer-guide/semantic-model/fields/measures)
-- Understand [formatters](/developer-guide/semantic-model/fields/formatters)
+- Understand [field format](/developer-guide/semantic-model/fields/formatters)
 - Read about [expressions](/developer-guide/semantic-model/expressions/sql)

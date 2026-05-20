@@ -202,7 +202,7 @@ inclusions:
   name: Median Revenue by Product
   description: Median revenue calculated at product level
   data_type: decimal
-  formatter: currency_usd
+  format: currency:2
   inclusions:
     filter: apply
     aggregation: percentile_cont(0.5) WITHIN GROUP (ORDER BY @exp)

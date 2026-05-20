@@ -64,7 +64,7 @@ fields:
     name: Gross Revenue
     description: Total sales before returns and discounts
     data_type: decimal
-    formatter: currency_usd
+    format: currency:2
     expression:
       sql: sum(gross_amount)
 
@@ -72,14 +72,14 @@ fields:
     name: Net Revenue
     description: Sales after returns and discounts
     data_type: decimal
-    formatter: currency_usd
+    format: currency:2
     expression:
       sql: sum(net_amount)
 
   - type: measure
     name: Discount Amount
     data_type: decimal
-    formatter: currency_usd
+    format: currency:2
     expression:
       sql: sum(discount_amount)
 
@@ -100,21 +100,21 @@ fields:
   - type: measure
     name: Cost of Goods Sold
     data_type: decimal
-    formatter: currency_usd
+    format: currency:2
     expression:
       sql: sum(cogs)
 
   - type: measure
     name: Gross Profit
     data_type: decimal
-    formatter: currency_usd
+    format: currency:2
     expression:
       sql: "[Net Revenue] - [Cost of Goods Sold]"
 
   - type: measure
     name: Gross Margin Percent
     data_type: decimal
-    formatter: percent
+    format: percent:2
     expression:
       sql: "[Gross Profit] / nullif([Net Revenue], 0)"
 
@@ -122,21 +122,21 @@ fields:
   - type: measure
     name: Average Transaction Value
     data_type: decimal
-    formatter: currency_usd
+    format: currency:2
     expression:
       sql: "[Net Revenue] / nullif([Transaction Count], 0)"
 
   - type: measure
     name: Average Selling Price
     data_type: decimal
-    formatter: currency_usd
+    format: currency:2
     expression:
       sql: "[Net Revenue] / nullif([Units Sold], 0)"
 
   - type: measure
     name: Discount Rate
     data_type: decimal
-    formatter: percent
+    format: percent:2
     expression:
       sql: "[Discount Amount] / nullif([Gross Revenue], 0)"
 ```

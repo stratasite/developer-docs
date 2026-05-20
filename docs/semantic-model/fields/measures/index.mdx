@@ -58,9 +58,9 @@ expression:
 
 Hide from UI while keeping available for calculations.
 
-### formatter
+### format
 
-Apply formatting. [Formatters →](/developer-guide/semantic-model/fields/formatters)
+Apply formatting (shortcut string or hash). [Field format →](/developer-guide/semantic-model/fields/formatters)
 
 ### synonyms
 
@@ -151,7 +151,7 @@ Force calculation at a lower level before rolling up. [Inclusions →](/develope
 - type: measure
   name: Total Sales
   data_type: decimal
-  formatter: currency_usd
+  format: currency:2
   expression:
     sql: sum(sales_amount)
 ```
@@ -172,7 +172,7 @@ Force calculation at a lower level before rolling up. [Inclusions →](/develope
 - type: measure
   name: Profit Margin
   data_type: decimal
-  formatter: percent
+  format: percent:2
   expression:
     sql: sum(profit) / sum(revenue)
 ```
@@ -185,7 +185,7 @@ For ratios that reference other **measures** by name, use [compound measures](/d
 - type: measure
   name: Revenue per Customer
   data_type: decimal
-  formatter: currency_usd
+  format: currency:2
   expression:
     sql: sum(amount) / count(distinct customer_id)
 ```
@@ -194,7 +194,7 @@ For ratios that reference other **measures** by name, use [compound measures](/d
 
 1. **Always include aggregation** - SUM, AVG, COUNT, etc.
 2. **Use appropriate data types** - `decimal` for money, `integer` for counts
-3. **Add formatters** - Currency, percentage
+3. **Add format** - Currency, percentage shortcuts
 4. **Add descriptions** - Help users understand measures
 5. **Use descriptive names**
 6. **Test calculations** - Verify measures are correct
@@ -205,5 +205,5 @@ For ratios that reference other **measures** by name, use [compound measures](/d
 - [Snapshot measures](/developer-guide/semantic-model/fields/measures/snapshot) - Point-in-time values
 - [Dimensions](/developer-guide/semantic-model/fields/dimensions)
 - [Data types](/developer-guide/semantic-model/fields/data-types)
-- [Formatters](/developer-guide/semantic-model/fields/formatters)
+- [Field format](/developer-guide/semantic-model/fields/formatters)
 - [Expressions](/developer-guide/semantic-model/expressions/sql)
