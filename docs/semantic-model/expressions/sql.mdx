@@ -13,6 +13,8 @@ expression:
   sql: column_name
 ```
 
+**Shorthand:** `expression: column_name` is equivalent to `expression: { sql: column_name }`. Use the mapping form when you need `lookup`, `primary_key`, or `array`.
+
 ## Simple Column Reference
 
 Reference a database column directly:

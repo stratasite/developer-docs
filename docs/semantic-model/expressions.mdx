@@ -58,6 +58,24 @@ SQL expressions are the most common type. They define how to query the field fro
       END
 ```
 
+## Shorthand
+
+For simple SQL only, you can use a string instead of a nested mapping (same as `expression: { sql: ... }`):
+
+```yaml
+- type: dimension
+  name: Order ID
+  data_type: integer
+  expression: order_id
+
+- type: measure
+  name: Total Revenue
+  data_type: decimal
+  expression: sum(amount)
+```
+
+Use the mapping form when you need `lookup`, `primary_key`, or `array`.
+
 ## Primary Keys
 
 Mark a dimension as a primary key. This helps with query optimization and ensures uniqueness.
