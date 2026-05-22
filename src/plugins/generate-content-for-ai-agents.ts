@@ -39,7 +39,7 @@ function generateContentForAiAgents(
     name: 'generate-content-for-ai-agents',
     async postBuild(props) {
       const {outDir, siteConfig} = props;
-      const {baseUrl} = siteConfig;
+      const {baseUrl, url} = siteConfig;
 
       const docsDir = path.join(context.siteDir, 'docs');
       const apiDir = path.join(outDir, 'api');
@@ -59,8 +59,8 @@ function generateContentForAiAgents(
 
       // Generate the 3 AI artifacts
       generateLlmsTxt(outDir, docs, sections);
-      generateDocsJson(apiDir, baseUrl);
-      generateJsonSchemas(schemaDir, baseUrl);
+      generateDocsJson(apiDir, url, baseUrl);
+      generateJsonSchemas(schemaDir, url, baseUrl);
 
       console.log('✓ Generated /llms.txt (canonical AI knowledge export)');
       console.log('✓ Generated /api/docs.json (machine discovery index)');
@@ -172,8 +172,20 @@ function generateLlmsTxt(outDir: string, docs: DocFile[], sections: Section[]) {
 // =============================================================================
 // ARTIFACT 2: Machine Discovery Index - /api/docs.json
 // =============================================================================
-function generateDocsJson(apiDir: string, baseUrl: string) {
+function buildCanonicalUrl(siteUrl: string, baseUrl: string, relativePath = ''): string {
+  const cleanSiteUrl = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
   const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  const cleanRelativePath = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath;
+
+  if (!cleanRelativePath) {
+    return `${cleanSiteUrl}${cleanBaseUrl}`;
+  }
+
+  return `${cleanSiteUrl}${cleanBaseUrl}/${cleanRelativePath}`;
+}
+
+function generateDocsJson(apiDir: string, siteUrl: string, baseUrl: string) {
+  const schemaRoot = buildCanonicalUrl(siteUrl, baseUrl, 'api/schema');
   
   const index = {
     version: '1.0',
@@ -182,32 +194,32 @@ function generateDocsJson(apiDir: string, baseUrl: string) {
     // Registry of semantic objects with their schemas
     semantic_objects: {
       table: {
-        schema: '/api/schema/table.json',
+        schema: `${schemaRoot}/table.json`,
         file_pattern: 'tbl.*.yml',
         description: 'Semantic table definition with dimensions and measures',
       },
       relation: {
-        schema: '/api/schema/relation.json',
+        schema: `${schemaRoot}/relation.json`,
         file_pattern: 'rel.*.yml',
         description: 'Table relationships and join definitions',
       },
       project: {
-        schema: '/api/schema/project.json',
+        schema: `${schemaRoot}/project.json`,
         file_pattern: 'project.yml',
         description: 'Project configuration and server connection',
       },
       datasources: {
-        schema: '/api/schema/datasources.json',
+        schema: `${schemaRoot}/datasources.json`,
         file_pattern: 'datasources.yml',
         description: 'Database connection configurations',
       },
       migration: {
-        schema: '/api/schema/migration.json',
+        schema: `${schemaRoot}/migration.json`,
         file_pattern: 'migrations/*.yml',
         description: 'Schema migration for renaming/swapping',
       },
       test: {
-        schema: '/api/schema/test.json',
+        schema: `${schemaRoot}/test.json`,
         file_pattern: 'tests/*.yml',
         description: 'Query validation test definitions',
       },
@@ -219,8 +231,8 @@ function generateDocsJson(apiDir: string, baseUrl: string) {
       'strata datasource add <name>': 'Add and configure a database connection',
       'strata datasource test <name>': 'Test database connection',
       'strata datasource list': 'List configured datasources',
-      'strata table create <name>': 'Generate table YAML from database introspection',
-      'strata relation create <name>': 'Generate relation YAML template',
+      'strata create table <name>': 'Generate table YAML from database introspection',
+      'strata create relation <name>': 'Generate relation YAML template',
       'strata audit': 'Validate semantic model (syntax + semantics)',
       'strata audit syntax': 'Check YAML syntax only',
       'strata audit models': 'Validate model semantics only',
@@ -241,7 +253,7 @@ function generateDocsJson(apiDir: string, baseUrl: string) {
     ],
 
     // Link to full knowledge
-    full_knowledge: '/llms.txt',
+    full_knowledge: buildCanonicalUrl(siteUrl, baseUrl, 'llms.txt'),
   };
 
   fs.writeFileSync(
@@ -253,9 +265,8 @@ function generateDocsJson(apiDir: string, baseUrl: string) {
 // =============================================================================
 // ARTIFACT 3: Strict Validation Schemas - /api/schema/*.json
 // =============================================================================
-function generateJsonSchemas(schemaDir: string, baseUrl: string) {
-  const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-  const schemaBaseUrl = `https://strata.do${cleanBaseUrl}/api/schema`;
+function generateJsonSchemas(schemaDir: string, siteUrl: string, baseUrl: string) {
+  const schemaBaseUrl = buildCanonicalUrl(siteUrl, baseUrl, 'api/schema');
 
   // Table Schema - strict validation
   const tableSchema = {
