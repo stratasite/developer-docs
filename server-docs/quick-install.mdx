@@ -50,7 +50,7 @@ Open `http://<your-host-or-ip>:<PORT>` (or your load balancer URL) and complete 
 ### View Logs
 
 ```bash
-cd /path/to/strata && docker compose logs -f
+cd /path/to/strata && docker compose logs -f web job
 ```
 
 ### Stop Strata
@@ -80,11 +80,14 @@ The installer detects the existing installation, preserves your `.env`, pulls th
 
 ## Runtime Topology
 
-The installer creates one service from the Strata image:
+The installer creates two services from the **same** Strata image:
 
-- `web` (all runtime processing)
+| Service | Role |
+|---------|------|
+| `web` | HTTP (Thruster + Puma). Runs database migrations on boot. |
+| `job` | Background jobs (`bin/jobs`). Waits for `web` to become healthy first. |
 
-The runtime model is a single application service.
+Jobs run in the separate `job` service (production layout). Tune `WEB_CONCURRENCY`, `JOB_CONCURRENCY`, and related vars in `.env` — see [Environment Variables](/self-hosting/environment-variables#performance).
 
 ## Troubleshooting
 

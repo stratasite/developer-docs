@@ -76,14 +76,39 @@ services:
     ports:
       - "${PORT:-3000}:${STRATA_CONTAINER_PORT:-80}"
     env_file: .env
+    environment:
+      RAILS_ENV: production
+      STRATA_RUN_DB_PREPARE: "true"
     volumes:
       - strata_storage:/rails/storage
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:$${STRATA_CONTAINER_PORT:-80}/up || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+
+  job:
+    image: registry.gitlab.com/stratado/server:${STRATA_VERSION:-latest}
+    env_file: .env
+    environment:
+      RAILS_ENV: production
+      STRATA_RUN_DB_PREPARE: "false"
+      JOB_CONCURRENCY: "${JOB_CONCURRENCY:-4}"
+    command: ["./bin/jobs"]
+    volumes:
+      - strata_storage:/rails/storage
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_healthy
 
 volumes:
   strata_storage:
 ```
-Strata runs as a single application service.
+
+The `web` service handles HTTP and database setup. The `job` service processes background jobs using the same image and shared storage volume.
 
 ## 5. Configure Environment Variables
 
@@ -119,7 +144,7 @@ docker compose up -d
 Watch the startup logs:
 
 ```bash
-docker compose logs -f web
+docker compose logs -f web job
 ```
 
 Expected output on first run:

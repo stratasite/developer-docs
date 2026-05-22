@@ -38,7 +38,7 @@ cd /path/to/strata
 curl -fsSL https://strata.do/server/install.sh | bash
 ```
 
-The installer preserves `.env`, updates compose config, pulls the selected image tag, and restarts services.
+The installer preserves `.env`, updates compose config, pulls the selected image tag, and restarts services. Re-running the installer renames the background service from `worker` to `job` in `docker-compose.yml` (stop the old stack first if you have a running `worker` container).
 
 ### Manual Host Deployment (VM / On-Prem)
 
@@ -58,16 +58,16 @@ docker compose up -d
 3. Verify:
 
 ```bash
-docker compose logs -f web
+docker compose logs -f web job
 curl http://<your-host-or-alb>/up
 ```
 
 ### AWS ECS Manual Deployment
 
 1. Select target Strata image tag.
-2. Create a new task definition revision for the Strata web service.
-3. Update the ECS service to the new task definition revision.
-4. Verify ALB `/up` and application logs in CloudWatch.
+2. Create new task definition revisions for **web** and **job** services.
+3. Update the **web** ECS service first, then the **job** service (force new deployment).
+4. Verify ALB `/up` and application logs in CloudWatch for both services.
 
 ## 3. Rollback
 

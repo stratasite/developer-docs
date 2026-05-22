@@ -75,6 +75,9 @@ Strata uses EFS for persistent file storage in ECS deployments.
    | Key | Value |
    |---|---|
    | `STRATA_CONTAINER_PORT` | `8080` |
+   | `STRATA_RUN_DB_PREPARE` | `true` |
+   | `WEB_CONCURRENCY` | `2` |
+   | `STRATA_MAX_THREADS` | `5` |
    | `DB_HOST` | Your PostgreSQL host |
    | `DB_PORT` | `5432` |
    | `DB_USERNAME` | Your PostgreSQL username |
@@ -127,13 +130,64 @@ Check **CloudWatch Logs** for the Strata service. A healthy startup looks like:
 
 Open the service URL shown in the ECS service details page. Complete the **Setup Wizard** to create your admin account.
 
+## Step 6: Add a job ECS service
+
+Background jobs should **not** run inside the web task. Use the **same image** with a second ECS service named e.g. `strata-job` (no load balancer).
+
+### 6a. Create a job task definition
+
+1. **Task Definitions** → **Create new task definition** (or duplicate the web task definition).
+2. Use the same image, CPU (2 vCPU), and memory (4 GB) as web.
+3. **Container command** (override the default):
+
+   ```
+   ./bin/jobs
+   ```
+
+   (Equivalent to `./bin/rails,solid_queue:start`.)
+
+4. **Remove** the container port mapping — job tasks do not receive HTTP traffic.
+5. Add the same **EFS volume** and mount at `/mnt/efs` (exports and Active Storage may read shared files).
+6. **Environment variables** — same `DB_*` and secrets as web, plus:
+
+   | Key | Value |
+   |---|---|
+   | `STRATA_RUN_DB_PREPARE` | `false` |
+   | `JOB_CONCURRENCY` | `4` |
+
+7. Do **not** attach this task definition to the Application Load Balancer.
+
+### 6b. Create the job ECS service
+
+1. **ECS** → **Create service** (standard mode on the same cluster/VPC as web).
+2. **Task definition**: the job revision from 6a.
+3. **Desired count**: start with `2` (tune after monitoring queue latency).
+4. **Networking**: same VPC/subnets as web; security group allows **outbound** to PostgreSQL and EFS (NFS 2049). No inbound rules from the internet are required.
+5. **Load balancer**: none.
+
+### 6c. Deploy order
+
+1. Deploy or update **web** first and confirm `[Strata] Databases ready.` in logs.
+2. Deploy **job** tasks. Logs should show `Skipping database prepare (STRATA_RUN_DB_PREPARE=false).`
+
+### 6d. Scaling
+
+| Goal | Knob |
+|------|------|
+| More HTTP throughput | Increase **web** service `desiredCount` and/or `WEB_CONCURRENCY` |
+| More background throughput | Increase **job** service `desiredCount` and/or `JOB_CONCURRENCY` |
+
+Users still use **one URL** (the web service ALB). Job tasks are internal-only.
+
+See [Performance and scaling](/self-hosting/performance-scaling) for connection budgeting and load tests.
+
 ## Upgrading
 
-1. Go to **Task Definitions** → select your Strata task definition → **Create new revision**
-2. Update the image tag to the new release version
-3. Go to your **ECS service** → **Update** → select the new revision → enable **Force new deployment** → **Update service**
+1. Go to **Task Definitions** → create a new revision for **web** and **job** task definitions with the new image tag.
+2. Update the **web** ECS service first → **Force new deployment**.
+3. Update the **job** ECS service → **Force new deployment**.
 
-ECS performs a rolling deployment, replacing running tasks with the new revision.
+ECS performs a rolling deployment per service. Web tasks run migrations via `db:prepare`; job tasks skip them.
 
 ## Rollback
 
