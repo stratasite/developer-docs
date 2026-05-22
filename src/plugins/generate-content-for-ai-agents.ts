@@ -59,7 +59,7 @@ function generateContentForAiAgents(
 
       // Generate the 3 AI artifacts
       generateLlmsTxt(outDir, docs, sections);
-      generateDocsJson(apiDir, url, baseUrl);
+      generateDocsJson(apiDir, url, baseUrl, docs, sections);
       generateJsonSchemas(schemaDir, url, baseUrl);
 
       console.log('✓ Generated /llms.txt (canonical AI knowledge export)');
@@ -184,12 +184,73 @@ function buildCanonicalUrl(siteUrl: string, baseUrl: string, relativePath = ''):
   return `${cleanSiteUrl}${cleanBaseUrl}/${cleanRelativePath}`;
 }
 
-function generateDocsJson(apiDir: string, siteUrl: string, baseUrl: string) {
+function buildAbsoluteUrl(siteUrl: string, pathWithBaseUrl: string): string {
+  const cleanSiteUrl = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
+  return `${cleanSiteUrl}${pathWithBaseUrl}`;
+}
+
+function buildDocSummary(doc: DocFile): string {
+  const frontmatterDescription = doc.frontmatter.description;
+  if (typeof frontmatterDescription === 'string' && frontmatterDescription.trim()) {
+    return frontmatterDescription.trim();
+  }
+
+  const cleaned = cleanMdxContent(doc.content)
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')
+    .replace(/^#+\s+/gm, '')
+    .replace(/\n+/g, ' ')
+    .trim();
+
+  if (!cleaned) {
+    return '';
+  }
+
+  const firstSentence = cleaned.match(/.*?[.!?](\s|$)/);
+  const summary = firstSentence ? firstSentence[0].trim() : cleaned.slice(0, 180).trim();
+
+  return summary.length <= 220 ? summary : `${summary.slice(0, 217).trimEnd()}...`;
+}
+
+function generateDocsJson(
+  apiDir: string,
+  siteUrl: string,
+  baseUrl: string,
+  docs: DocFile[],
+  sections: Section[]
+) {
   const schemaRoot = buildCanonicalUrl(siteUrl, baseUrl, 'api/schema');
+  const docsRoot = buildCanonicalUrl(siteUrl, baseUrl, 'developer-guide');
+  const generatedSections = sections.map((section) => ({
+    id: section.id,
+    title: section.title,
+    url: buildAbsoluteUrl(siteUrl, section.url),
+    item_count: section.items.length,
+    items: section.items.map((doc) => ({
+      id: doc.id,
+      title: doc.title,
+      url: buildAbsoluteUrl(siteUrl, doc.url),
+      section: doc.section,
+      path: doc.path.replace(/\\/g, '/'),
+      summary: buildDocSummary(doc),
+    })),
+  }));
+  const generatedPages = docs.map((doc) => ({
+    id: doc.id,
+    title: doc.title,
+    url: buildAbsoluteUrl(siteUrl, doc.url),
+    section: doc.section,
+    path: doc.path.replace(/\\/g, '/'),
+    summary: buildDocSummary(doc),
+  }));
   
   const index = {
     version: '1.0',
     strata_version_compatibility: '>=0.9.0',
+    docs_root: docsRoot,
+    docs_sections: generatedSections,
+    docs_pages: generatedPages,
     
     // Registry of semantic objects with their schemas
     semantic_objects: {
