@@ -164,30 +164,31 @@ AZURE_STORAGE_CONTAINER=strata-uploads
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `WEB_CONCURRENCY` | No | `2` in production, single process in dev | Puma worker **processes** per web container. Ignored in development (single-process Puma). Use `2` on 4 vCPU / 8 GB production tasks. |
-| `STRATA_MAX_THREADS` | No | `5` | Puma **threads** per worker process. Request capacity ≈ `WEB_CONCURRENCY × STRATA_MAX_THREADS` in production. Also sets the database pool when `STRATA_DB_POOL_SIZE` is unset (see below). |
-| `STRATA_DB_POOL_SIZE` | No | falls back to `STRATA_MAX_THREADS`, then `RAILS_MAX_THREADS`, then `5` | Active Record `pool` in `config/database.yml` **per Ruby process**. Omit in normal deployments so pool tracks thread count automatically. |
+| `WEB_THREADS` | No | `5` | Puma **threads** per worker process. Request capacity ≈ `WEB_CONCURRENCY × WEB_THREADS` in production. Also sets the database pool when `DB_POOL_SIZE` is unset (see below). |
+| `DB_POOL_SIZE` | No | falls back to `WEB_THREADS`, then `5` | Active Record `pool` in `config/database.yml` **per Ruby process**. Omit in normal deployments so pool tracks `WEB_THREADS`. |
 | `STRATA_RUN_DB_PREPARE` | No | `true` | Set to `false` on job containers so only web runs migrations on boot. |
-| `STRATA_LOG_LEVEL` | No | `info` | Log verbosity: `debug`, `info`, `warn`, `error`, `fatal`. Maps to `config.log_level` in production. Legacy `RAILS_LOG_LEVEL` is still accepted if `STRATA_LOG_LEVEL` is unset. |
+| `STRATA_LOG_LEVEL` | No | `info` | Log verbosity: `debug`, `info`, `warn`, `error`, `fatal`. Maps to `config.log_level` in production. |
 
 ### Job container
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `JOB_CONCURRENCY` | No | `1` | Solid Queue worker **processes** per job container (`config/queue.yml`). Enterprise Compose defaults to `4`. |
+| `JOB_THREADS` | No | `3` | Solid Queue **threads** per process in `config/queue.yml`. Job capacity ≈ `JOB_CONCURRENCY × JOB_THREADS`. |
 | `STRATA_RUN_DB_PREPARE` | No | `true` | Must be `false` on the `job` service. |
 
 ### Database connection pool (`database.yml`)
 
 Each Puma worker and each Solid Queue process in the `job` service is a separate Ruby process with its **own** connection pool. The pool size is resolved at boot:
 
-1. `STRATA_DB_POOL_SIZE` — optional override (advanced)
-2. else `STRATA_MAX_THREADS`
-3. else `RAILS_MAX_THREADS` (Rails convention, rarely needed for Strata installs)
+1. `DB_POOL_SIZE` — optional override (advanced)
+2. else `WEB_THREADS`
+3. else `RAILS_MAX_THREADS` (Rails convention, rarely needed)
 4. else `5`
 
-**Rule of thumb:** leave `STRATA_DB_POOL_SIZE` unset and set only `STRATA_MAX_THREADS` on **web**. Pool should match threads per process (`pool` ≥ concurrent request threads in that process). Set `STRATA_DB_POOL_SIZE` explicitly only after profiling (e.g. a measured need for one or two extra checkout slots — never lower than thread count).
+**Rule of thumb:** leave `DB_POOL_SIZE` unset and set only `WEB_THREADS` on **web**. Pool should match threads per process (`pool` ≥ concurrent request threads in that process). Set `DB_POOL_SIZE` explicitly only after profiling (never lower than thread count).
 
-On **job** containers, pool uses the same fallback; if you do not set `STRATA_MAX_THREADS`, the default pool is still `5`, which is enough for the default Solid Queue thread count (`3` per process in `config/queue.yml`).
+On **job** containers, pool uses the same fallback; default pool **5** is enough for default `JOB_THREADS=3`.
 
 ### Sizing notes
 
@@ -196,7 +197,7 @@ On **job** containers, pool uses the same fallback; if you do not set `STRATA_MA
 - See [Performance and scaling](/self-hosting/performance-scaling) for capacity formulas and load-test guidance.
 
 :::tip
-For a server with 4+ CPU cores and 8+ GB RAM, a good starting point is `WEB_CONCURRENCY=2` and `STRATA_MAX_THREADS=5` on web, plus a separate `job` service with `JOB_CONCURRENCY=4`.
+For a server with 4+ CPU cores and 8+ GB RAM, a good starting point is `WEB_CONCURRENCY=2` and `WEB_THREADS=5` on web, plus a separate `job` service with `JOB_CONCURRENCY=4` and `JOB_THREADS=3`.
 :::
 
 ### Advanced: single-container (monolith) production
@@ -205,4 +206,4 @@ Enterprise installs use **web** and **job** services; you do not need to configu
 
 | Variable | When to set |
 |----------|-------------|
-| `SOLID_QUEUE_IN_PUMA` | Set to `true` on the web container **only** if you run a single container with no `job` service and want jobs inside Puma. Set to `false` to force jobs out of Puma in non-production (unusual). |
+| `HANDLE_JOBS_IN_WEB_SERVER` | Set to `true` on the web container **only** for a single-container (monolith) deployment with no `job` service. Set to `false` to force jobs out of Puma in non-production (unusual). |

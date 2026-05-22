@@ -87,7 +87,7 @@ The installer creates two services from the **same** Strata image:
 | `web` | HTTP (Thruster + Puma). Runs database migrations on boot. |
 | `job` | Background jobs (`bin/jobs`). Waits for `web` to become healthy first. |
 
-Jobs run in the separate `job` service (production layout). Tune `WEB_CONCURRENCY`, `JOB_CONCURRENCY`, and related vars in `.env` — see [Environment Variables](/self-hosting/environment-variables#performance).
+Jobs run in the separate `job` service (production layout). Tune `WEB_CONCURRENCY`, `WEB_THREADS`, `JOB_CONCURRENCY`, `JOB_THREADS`, and related vars in `.env` — see [Environment Variables](/self-hosting/environment-variables#performance).
 
 ## Troubleshooting
 

@@ -6,8 +6,8 @@ This guide helps you size web and job capacity for Strata self-hosted deployment
 
 | Role | Processes | Scales with |
 |------|-----------|-------------|
-| **Web** | Thruster → Puma (`WEB_CONCURRENCY` workers × `STRATA_MAX_THREADS` threads) | HTTP RPS and latency |
-| **Job** | Solid Queue (`JOB_CONCURRENCY` processes × 3 threads each in `config/queue.yml`) | Job backlog and completion time |
+| **Web** | Thruster → Puma (`WEB_CONCURRENCY` workers × `WEB_THREADS` threads) | HTTP RPS and latency |
+| **Job** | Solid Queue (`JOB_CONCURRENCY` processes × `JOB_THREADS` each in `config/queue.yml`) | Job backlog and completion time |
 
 Use the **same container image** for both roles. Only the **web** role is exposed to users.
 
@@ -16,10 +16,10 @@ Use the **same container image** for both roles. Only the **web** role is expose
 Approximate concurrent request slots per web container:
 
 ```
-slots = WEB_CONCURRENCY × STRATA_MAX_THREADS
+slots = WEB_CONCURRENCY × WEB_THREADS
 ```
 
-Example: `WEB_CONCURRENCY=2`, `STRATA_MAX_THREADS=5` → **10 slots** per container.
+Example: `WEB_CONCURRENCY=2`, `WEB_THREADS=5` → **10 slots** per container.
 
 For **50–200 RPS** with typical Rails I/O-bound requests:
 
@@ -29,10 +29,10 @@ For **50–200 RPS** with typical Rails I/O-bound requests:
 
 ### Postgres connections (web)
 
-Each Puma worker process has its own connection pool per database role. Pool size comes from `config/database.yml`: `STRATA_DB_POOL_SIZE`, or else `STRATA_MAX_THREADS` (default **5**).
+Each Puma worker process has its own connection pool per database role. Pool size comes from `config/database.yml`: `DB_POOL_SIZE`, or else `WEB_THREADS` (default **5**).
 
 ```
-effective_pool = STRATA_DB_POOL_SIZE ?? STRATA_MAX_THREADS ?? 5
+effective_pool = DB_POOL_SIZE ?? WEB_THREADS ?? 5
 primary_connections_per_web_task ≈ WEB_CONCURRENCY × effective_pool
 ```
 
@@ -49,10 +49,10 @@ Leave headroom for migrations, BI tools, and replicas.
 Approximate concurrent job execution slots per job container:
 
 ```
-slots = JOB_CONCURRENCY × threads_per_process
+slots = JOB_CONCURRENCY × JOB_THREADS
 ```
 
-Default `threads_per_process` is **3** (`config/queue.yml`).
+Default `JOB_THREADS` is **3** (`config/queue.yml`). Installer default: `JOB_CONCURRENCY=4` → **12 slots**.
 
 Completed jobs per second (rough estimate):
 
@@ -60,7 +60,7 @@ Completed jobs per second (rough estimate):
 throughput ≈ concurrent_slots / average_job_duration_seconds
 ```
 
-Example: 4 processes × 3 threads = 12 slots; 10s average job duration → ~**1.2 jobs/sec** per container.
+Example: `JOB_CONCURRENCY=4` × `JOB_THREADS=3` = 12 slots; 10s average job duration → ~**1.2 jobs/sec** per container.
 
 ### Application limits
 
@@ -69,14 +69,14 @@ Several jobs use `limits_concurrency` (for example, one active query per result 
 ### Scaling jobs
 
 1. Increase **job** ECS service desired count (or `docker compose up --scale job=N`).
-2. Increase **`JOB_CONCURRENCY`** per task if CPU and DB connections allow.
+2. Increase **`JOB_CONCURRENCY`** or **`JOB_THREADS`** per task if CPU and DB connections allow.
 3. Consider **dedicated job services per queue** (advanced) if query jobs dominate.
 
 ## Recommended starting points
 
 | Profile | Web | Job | Notes |
 |---------|-----|-----|-------|
-| **Single host (Compose)** | 1 container, `WEB_CONCURRENCY=2`, `STRATA_MAX_THREADS=5` | 1 `job` service, `JOB_CONCURRENCY=4` | Installer defaults |
+| **Single host (Compose)** | 1 container, `WEB_CONCURRENCY=2`, `WEB_THREADS=5` | 1 `job` service, `JOB_CONCURRENCY=4`, `JOB_THREADS=3` | Installer defaults |
 | **ECS (50–200 RPS)** | 2–4 tasks, 2 vCPU / 4 GB | 2–4 tasks, 2 vCPU / 4 GB | Scale on CPU and queue depth |
 | **Stretch (high job rate)** | Scale web separately | Many job tasks; benchmark before committing | See limits above |
 
@@ -88,7 +88,7 @@ Before scaling to large fleets:
 2. **Measure** HTTP p95 under expected concurrent users (not just `/up`).
 3. **Watch** RDS connections, CPU, and Solid Queue ready execution count.
 4. **Confirm** `STRATA_RUN_DB_PREPARE=false` on all job tasks.
-5. **Confirm** production web tasks do not process jobs (run a **job** service; no Solid Queue env vars required on web).
+5. **Confirm** production web tasks do not process jobs (run a **job** service; omit `HANDLE_JOBS_IN_WEB_SERVER` on web).
 
 ### Example observability queries
 

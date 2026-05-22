@@ -77,7 +77,7 @@ Strata uses EFS for persistent file storage in ECS deployments.
    | `STRATA_CONTAINER_PORT` | `8080` |
    | `STRATA_RUN_DB_PREPARE` | `true` |
    | `WEB_CONCURRENCY` | `2` |
-   | `STRATA_MAX_THREADS` | `5` |
+   | `WEB_THREADS` | `5` |
    | `DB_HOST` | Your PostgreSQL host |
    | `DB_PORT` | `5432` |
    | `DB_USERNAME` | Your PostgreSQL username |
@@ -154,6 +154,7 @@ Background jobs should **not** run inside the web task. Use the **same image** w
    |---|---|
    | `STRATA_RUN_DB_PREPARE` | `false` |
    | `JOB_CONCURRENCY` | `4` |
+   | `JOB_THREADS` | `3` |
 
 7. Do **not** attach this task definition to the Application Load Balancer.
 
