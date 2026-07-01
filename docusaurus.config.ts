@@ -68,6 +68,22 @@ const config: Config = {
         },
       } satisfies Preset.Options,
     ],
+    [
+      'redocusaurus',
+      {
+        specs: [
+          {
+            spec: 'static/openapi/strata-api-v1.yaml',
+            route: '/api/rest/openapi',
+          },
+        ],
+        theme: {
+          options: {
+            hideDownloadButton: true,
+          },
+        },
+      },
+    ],
   ],
 
   plugins: [
@@ -127,6 +143,18 @@ const config: Config = {
           docsPluginId: 'server',
         },
         {
+          type: 'doc',
+          docId: 'api/rest/index',
+          label: 'API Guide',
+          position: 'left',
+        },
+        {
+          to: 'api/rest/openapi',
+          label: 'API Reference',
+          position: 'left',
+          target: '_blank',
+        },
+        {
           to: 'web-ui',
           label: 'Web UI Guide',
           position: 'left',
@@ -146,6 +174,14 @@ const config: Config = {
             {
               label: 'CLI Reference',
               to: 'developer-guide/cli',
+            },
+            {
+              label: 'REST API',
+              to: 'developer-guide/api/rest',
+            },
+            {
+              label: 'API Reference',
+              to: 'api/rest/openapi',
             },
           ],
         },

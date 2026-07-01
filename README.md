@@ -14,8 +14,9 @@ Visit the live documentation at: **https://strata.do/developer-docs/**
 
 - **Getting Started Guides** - Installation, setup, and core concepts
 - **CLI Reference** - Command-line tools for managing semantic models
+- **REST API Reference** - API v1 for metadata discovery, queries, SQL preview, and results
 - **Semantic Model Documentation** - Building tables, relationships, and dimensions
-- **API Integration** - REST API and LLM integration guides
+- **API Integration** - REST API guides, OpenAPI spec, and LLM integration
 - **Advanced Topics** - Semantic routing, universe formation, and optimization
 - **Examples & Recipes** - Real-world use cases and patterns
 

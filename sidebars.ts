@@ -164,11 +164,24 @@ const sidebars: SidebarsConfig = {
       id: 'troubleshooting/index',
       label: 'Troubleshooting',
     },
-    // 6. AI Agents and Strata
+    // 6. API
     {
-      type: 'doc',
-      id: 'api/ai-agents',
-      label: 'AI Agents and Strata',
+      type: 'category',
+      label: 'API',
+      link: { type: 'doc', id: 'api/rest/index' },
+      items: [
+        'api/rest/authentication',
+        'api/rest/quickstart',
+        'api/rest/conventions',
+        'api/rest/query-spec',
+        'api/rest/fields',
+        'api/rest/tables',
+        'api/rest/queries',
+        'api/rest/sql',
+        'api/rest/results',
+        'api/rest/errors',
+        'api/ai-agents',
+      ],
     },
   ],
 };
