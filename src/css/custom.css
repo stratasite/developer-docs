@@ -1,23 +1,56 @@
-/**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
- */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #374151;
-  --ifm-color-primary-dark: #1f2937;
-  --ifm-color-primary-darker: #111827;
-  --ifm-color-primary-darkest: #0f172a;
-  --ifm-color-primary-light: #4b5563;
-  --ifm-color-primary-lighter: #6b7280;
-  --ifm-color-primary-lightest: #9ca3af;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-color-primary:         #BC3908;
+  --ifm-color-primary-dark:    #AF3306;
+  --ifm-color-primary-darker:  #9C2A04;
+  --ifm-color-primary-darkest: #7A1E02;
+  --ifm-color-primary-light:   #D4430D;
+  --ifm-color-primary-lighter: #E0641F;
+  --ifm-color-primary-lightest:#FFC26E;
+
+  --ifm-background-color:         #FFF6EA;
+  --ifm-background-surface-color: #F7E8D6;
+
+  --ifm-font-color-base:      #1C2B45;
+  --ifm-font-color-secondary: #4A5E7A;
+
+  --ifm-font-family-base:      'Inter', system-ui, sans-serif;
+  --ifm-heading-font-family:   'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --ifm-font-family-monospace: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  --ifm-code-font-size: 93%;
+
+  --ifm-color-emphasis-300: rgba(188, 57, 8, 0.14);
+
+  --ifm-navbar-background-color: #BC3908;
+  --ifm-navbar-link-color:       #FFF6EA;
+  --ifm-navbar-link-hover-color: #FFC26E;
+
+  --docusaurus-highlighted-code-line-bg: rgba(188, 57, 8, 0.1);
 }
 
-/* Hero: inherit page surface so homepage feels continuous */
+[data-theme='dark'] {
+  --ifm-color-primary:         #E0641F;
+  --ifm-color-primary-dark:    #C8561A;
+  --ifm-color-primary-darker:  #BC3908;
+  --ifm-color-primary-darkest: #9C2A04;
+  --ifm-color-primary-light:   #F07830;
+  --ifm-color-primary-lighter: #FFC26E;
+  --ifm-color-primary-lightest:#FFD4A0;
+
+  --ifm-background-color:         #14203A;
+  --ifm-background-surface-color: #1C2B45;
+
+  --ifm-font-color-base:      #FFF6EA;
+  --ifm-font-color-secondary: #9AA6BF;
+
+  --ifm-navbar-background-color: #BC3908;
+  --ifm-navbar-link-color:       #FFF6EA;
+  --ifm-navbar-link-hover-color: #FFC26E;
+
+  --docusaurus-highlighted-code-line-bg: rgba(255, 194, 110, 0.15);
+}
+
 .hero--primary {
   background-color: transparent;
   color: inherit;
@@ -28,14 +61,32 @@
   color: inherit;
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
-[data-theme='dark'] {
-  --ifm-color-primary: #e5e7eb;
-  --ifm-color-primary-dark: #d1d5db;
-  --ifm-color-primary-darker: #9ca3af;
-  --ifm-color-primary-darkest: #6b7280;
-  --ifm-color-primary-light: #f3f4f6;
-  --ifm-color-primary-lighter: #f9fafb;
-  --ifm-color-primary-lightest: #ffffff;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+/* Navbar title text color on rust background */
+.navbar__title {
+  color: #FFF6EA;
+}
+
+.navbar__toggle {
+  color: #FFF6EA;
+}
+
+/* Footer: always ink regardless of mode */
+.footer {
+  background-color: #1C2B45 !important;
+}
+
+.footer__title {
+  color: #FFF6EA;
+}
+
+.footer__link-item {
+  color: #9AA6BF;
+}
+
+.footer__link-item:hover {
+  color: #FFC26E;
+}
+
+.footer__copyright {
+  color: #9AA6BF;
 }
