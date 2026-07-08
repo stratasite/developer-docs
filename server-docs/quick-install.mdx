@@ -10,7 +10,41 @@ Get Strata running in minutes — no prior setup required.
 
 ## Docker
 
-The installer validates prerequisites, configures your environment, and starts Strata against an external PostgreSQL instance.
+One command. No configuration needed.
+
+```bash
+docker run -d -p 8080:80 -v strata_data:/data --name strata registry.gitlab.com/stratado/server:latest
+```
+
+Strata starts a bundled PostgreSQL instance and auto-generates encryption secrets on first boot. Both are persisted to the `strata_data` volume.
+
+The `-v strata_data:/data` flag is optional — omitting it lets Docker manage the volume automatically, but naming it makes it easier to inspect and back up later.
+
+Open [http://localhost:8080](http://localhost:8080), enter your license key, then create your admin account.
+You can get your FREE license key at [license.strata.do](https://license.strata.do)
+
+:::caution Bundled database
+The bundled Postgres is for local evaluation. For persistent production data, use a dedicated PostgreSQL instance — see the [Production Deployment](/self-hosting/production-deployment) guide.
+:::
+
+### Stopping and removing
+
+```bash
+docker stop strata && docker rm strata
+```
+
+To also wipe stored data:
+
+```bash
+docker volume rm strata_data
+```
+
+  </TabItem>
+  <TabItem value="installer" label="Installer Script">
+
+## Installer Script
+
+The installer validates prerequisites, configures your environment, and starts Strata as Docker Compose services.
 
 ```bash
 curl -fsSL https://strata.do/server/install.sh | bash
@@ -35,12 +69,11 @@ STRATA_INSTALL_DIR=/opt/strata curl -fsSL https://strata.do/server/install.sh | 
 After setup, open `http://<your-host>:<PORT>`, enter your license key, then create your admin account.
 You can get your FREE license key at [license.strata.do](https://license.strata.do)
 
-
 ### Managing Strata
 
 ```bash
 # View logs
-cd /path/to/strata && docker compose logs -f web job
+cd /path/to/strata && docker compose logs -f
 
 # Stop
 cd /path/to/strata && docker compose down
@@ -57,41 +90,6 @@ Re-run the installer from your install directory. Your `.env` is preserved — t
 ```bash
 cd /path/to/strata
 curl -fsSL https://strata.do/server/install.sh | bash
-```
-
-  </TabItem>
-  <TabItem value="installer" label="Installer Script">
-
-## Installer Script
-
-One command. No configuration needed.
-
-```bash
-docker run -d -p 8080:80 -v strata_data:/data --name strata registry.gitlab.com/stratado/server:latest
-```
-
-Strata starts a bundled PostgreSQL instance and auto-generates encryption secrets on first boot. Both are persisted to the `strata_data` volume.
-
-The `-v strata_data:/data` flag is optional — omitting it lets Docker manage the volume automatically, but naming it makes it easier to inspect and back up later.
-
-Open [http://localhost:8080](http://localhost:8080), enter your license key, then create your admin account.
-You can get your FREE license key at [license.strata.do](https://license.strata.do)
-
-
-:::caution Bundled database
-The bundled Postgres is for local evaluation. For persistent production data, use a dedicated PostgreSQL instance — see the [Production Deployment](/self-hosting/production-deployment) guide.
-:::
-
-### Stopping and removing
-
-```bash
-docker stop strata && docker rm strata
-```
-
-To also wipe stored data:
-
-```bash
-docker volume rm strata_data
 ```
 
   </TabItem>
