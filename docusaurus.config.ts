@@ -122,7 +122,7 @@ const config: Config = {
     navbar: {
       title: 'Strata Docs',
       logo: {
-        alt: 'Strata Docs',
+        alt: 'Strata',
         src: logoPath,
         href: baseUrl,
         width: 32,
