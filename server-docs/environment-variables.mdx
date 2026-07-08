@@ -78,7 +78,7 @@ Once you have a reverse proxy terminating SSL, set both `ASSUME_SSL=true` and `F
 
 ## Storage
 
-By default, Strata stores uploaded files on the local filesystem (Docker volume). For production ECS deployments, mount an EFS volume for persistent shared storage. For cloud object storage, configure one of the supported backends: Amazon S3, Google Cloud Storage, or Azure Blob Storage.
+Strata writes uploaded files (attachments, exports) to a storage backend. The default `local` backend writes to the container's filesystem via a Docker volume — this works fine for a single container but **files will be inaccessible if you run multiple web replicas**, because each container has its own volume. Switch to a shared backend (cloud object storage or a shared filesystem) whenever you run more than one web container or need uploads to survive container replacement.
 
 ### EFS (ECS Deployments)
 
@@ -91,6 +91,8 @@ When an EFS volume is mounted at `/mnt/efs`, Strata automatically detects it and
 | `STORAGE_BACKEND` | No | `local` | File storage service: `local` (Docker volume or EFS if mounted at `/mnt/efs`), `amazon` (S3-compatible), `google` (GCS), or `microsoft` (Azure Blob) |
 
 ### Amazon S3 / S3-Compatible
+
+Set these when `STORAGE_BACKEND=amazon`. Strata uses these credentials to read and write uploaded files directly to your bucket — no intermediate storage on the container.
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
