@@ -9,14 +9,14 @@ const sidebars: SidebarsConfig = {
     },
     'deployment-paths',
     'quick-install',
-    'manual-install',
+    'production-deployment',
     'aws-ecs-manual',
     'ssl-reverse-proxy',
     'environment-variables',
     'google-oauth',
     'upgrading',
     'security-hardening',
-    'troubleshooting-enterprise',
+    'troubleshooting-deployments',
   ],
 };
 

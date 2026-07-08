@@ -1,118 +1,146 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Quick Install
 
-Fastest path to deploy Strata on a single server. The installer validates prerequisites, authenticates with the container registry, captures configuration, and starts Strata.
+Get Strata running in minutes — no prior setup required.
 
-## Run the Installer
+<Tabs>
+  <TabItem value="docker" label="Docker" default>
+
+## Docker
+
+The installer validates prerequisites, configures your environment, and starts Strata against an external PostgreSQL instance.
 
 ```bash
 curl -fsSL https://strata.do/server/install.sh | bash
 ```
 
-By default, Strata is installed to `./strata` in the current directory. Override with:
+Override the install directory if needed (default: `./strata`):
 
 ```bash
 STRATA_INSTALL_DIR=/opt/strata curl -fsSL https://strata.do/server/install.sh | bash
 ```
 
-## Download the Environment Template (Optional)
-
-If you want to pre-populate configuration before running the installer, generate `.env` first:
-
-```bash
-curl -fsSL https://strata.do/server/env.sh | bash -s -- ./.env
-```
-
-## What the Installer Does
-
-1. **Checks prerequisites** — verifies Docker 24+ and Docker Compose v2.20+ are installed
-2. **Authenticates with GitLab Container Registry** — prompts for your registry username and token (provided with your license purchase)
-3. **Prompts for configuration** — collects the following:
+### What gets prompted
 
 | Prompt | Required | Description |
 |--------|----------|-------------|
-| `REGISTRY_USERNAME` | Yes | GitLab registry username (user/deploy token username) |
-| `REGISTRY_TOKEN` | Yes | GitLab registry token/password |
-| `LICENSE_KEY` | Yes | Your Strata license key (JWT issued for your organization) |
-| `DB_HOST` | Yes | PostgreSQL hostname or IP address |
-| `DB_PORT` | Yes | PostgreSQL port (default: 5432) |
-| `DB_USERNAME` | Yes | PostgreSQL username |
-| `DB_PASSWORD` | Yes | PostgreSQL password |
+| `DB_HOST` | No | PostgreSQL hostname or IP. Leave empty to use the bundled Postgres. |
+| `DB_PORT` | No | PostgreSQL port (default: 5432) |
+| `DB_USERNAME` | No | PostgreSQL username. Leave empty when using bundled Postgres. |
+| `DB_PASSWORD` | No | PostgreSQL password. Leave empty when using bundled Postgres. |
 | `PORT` | No | Host port for the web UI (default: 3000) |
 
-4. **Writes configuration** — creates `docker-compose.yml` and `.env` in the install directory
-5. **Pulls and starts** — pulls the Strata Docker image and starts the containers
-6. **Health check** — waits for the application to pass the `/up` health check
+After setup, open `http://<your-host>:<PORT>`, enter your license key, then create your admin account.
+You can get your FREE license key at [license.strata.do](https://license.strata.do)
 
-## After Installation
 
-Open `http://<your-host-or-ip>:<PORT>` (or your load balancer URL) and complete the Setup Wizard to create the first admin account.
-
-### View Logs
+### Managing Strata
 
 ```bash
+# View logs
 cd /path/to/strata && docker compose logs -f web job
-```
 
-### Stop Strata
-
-```bash
+# Stop
 cd /path/to/strata && docker compose down
-```
 
-### Edit Configuration
-
-```bash
+# Edit configuration, then restart
 nano /path/to/strata/.env
-# After editing, restart:
 docker compose up -d
 ```
 
-## Upgrading
+### Upgrading
 
-Re-run the installer from your Strata install directory:
+Re-run the installer from your install directory. Your `.env` is preserved — the new image is pulled and containers restart automatically.
 
 ```bash
 cd /path/to/strata
 curl -fsSL https://strata.do/server/install.sh | bash
 ```
 
-The installer detects the existing installation, preserves your `.env`, pulls the new image, and restarts containers. Migrations run automatically on startup.
+  </TabItem>
+  <TabItem value="installer" label="Installer Script">
 
-## Runtime Topology
+## Installer Script
 
-The installer creates two services from the **same** Strata image:
+One command. No configuration needed.
+
+```bash
+docker run -d -p 8080:80 -v strata_data:/data --name strata registry.gitlab.com/stratado/server:latest
+```
+
+Strata starts a bundled PostgreSQL instance and auto-generates encryption secrets on first boot. Both are persisted to the `strata_data` volume.
+
+The `-v strata_data:/data` flag is optional — omitting it lets Docker manage the volume automatically, but naming it makes it easier to inspect and back up later.
+
+Open [http://localhost:8080](http://localhost:8080), enter your license key, then create your admin account.
+You can get your FREE license key at [license.strata.do](https://license.strata.do)
+
+
+:::caution Bundled database
+The bundled Postgres is for local evaluation. For persistent production data, use a dedicated PostgreSQL instance — see the [Production Deployment](/self-hosting/production-deployment) guide.
+:::
+
+### Stopping and removing
+
+```bash
+docker stop strata && docker rm strata
+```
+
+To also wipe stored data:
+
+```bash
+docker volume rm strata_data
+```
+
+  </TabItem>
+</Tabs>
+
+---
+
+## Advanced
+
+The sections below cover internals and operational details.
+
+### Runtime Topology
+
+The Installer runs two containers from the same image:
 
 | Service | Role |
 |---------|------|
-| `web` | HTTP (Thruster + Puma). Runs database migrations on boot. |
-| `job` | Background jobs (`bin/jobs`). Waits for `web` to become healthy first. |
+| `web` | Handles web requests and runs database migrations on boot. |
+| `job` | Processes background jobs. Starts after `web` is healthy. |
 
-Jobs run in the separate `job` service (production layout). Tune `WEB_CONCURRENCY`, `WEB_THREADS`, `JOB_CONCURRENCY`, `JOB_THREADS`, and related vars in `.env` — see [Environment Variables](/self-hosting/environment-variables#performance).
+The Docker tab runs a single container that handles both roles.
 
-## Troubleshooting
+Tune performance settings (`WEB_CONCURRENCY`, `WEB_THREADS`, `JOB_CONCURRENCY`, `JOB_THREADS`) — see [Environment Variables](/self-hosting/environment-variables#performance).
 
-### Container exits immediately
+### What the Installer Does Internally
 
-Check the logs for database connection errors:
+1. **Checks prerequisites** — verifies Docker 24+ and Docker Compose v2.20+ are installed
+2. **Prompts for configuration** — collects database connection details and preferred port
+3. **Writes configuration** — creates `docker-compose.yml` and `.env` in the install directory; encryption secrets are generated automatically
+4. **Pulls and starts** — pulls the Strata Docker image and starts the containers
+5. **Health check** — waits for the application to pass the `/up` health check
+
+### Troubleshooting
+
+**Container exits immediately** — check logs for database connection errors:
 
 ```bash
 docker compose logs --tail 30 web
 ```
 
-Common causes:
-- Incorrect `DB_HOST`, `DB_PORT`, `DB_USERNAME`, or `DB_PASSWORD` in `.env`
-- PostgreSQL not accepting connections from the Docker host
-- Firewall blocking the PostgreSQL port
+Common causes: incorrect `DB_HOST`, `DB_PORT`, `DB_USERNAME`, or `DB_PASSWORD`; PostgreSQL not accepting connections from the Docker host; firewall blocking the port.
 
-### Health check never passes
-
-The `/up` endpoint returns HTTP 200 when the app is fully booted. On first run, database setup can take 30-60 seconds. Watch the logs:
+**Health check never passes** — on first run, database setup can take 30–60 seconds. Watch the logs:
 
 ```bash
 docker compose logs -f web
 ```
 
-You should see messages like:
+Expected output:
 ```
 [Strata] Waiting for PostgreSQL...
 [Strata] PostgreSQL is ready.

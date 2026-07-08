@@ -8,7 +8,6 @@ type SectionItem = {
   title: string;
   description: ReactNode;
   to: string;
-  comingSoon?: boolean;
 };
 
 const SectionList: SectionItem[] = [
@@ -33,38 +32,15 @@ const SectionList: SectionItem[] = [
     ),
     to: 'self-hosting',
   },
-  {
-    title: 'Web UI Guide',
-    description: (
-      <>
-        Use the Strata app after deployment: exploring data, running
-        workflows, and self-service BI. Documentation coming soon.
-      </>
-    ),
-    to: 'web-ui',
-    comingSoon: true,
-  },
 ];
 
-function SectionCard({
-  title,
-  description,
-  to,
-  comingSoon,
-}: SectionItem) {
+function SectionCard({ title, description, to }: SectionItem) {
   return (
-    <div className={clsx('col col--4', styles.sectionCol)}>
+    <div className={clsx('col col--6', styles.sectionCol)}>
       <Link to={to} className={styles.sectionCard}>
-        <Heading as="h3" className={styles.sectionTitle}>
-          {title}
-          {comingSoon && (
-            <span className={styles.comingSoon}>Coming soon</span>
-          )}
-        </Heading>
+        <Heading as="h3" className={styles.sectionTitle}>{title}</Heading>
         <p className={styles.sectionDescription}>{description}</p>
-        <span className={styles.sectionCta}>
-          {comingSoon ? 'Learn more' : 'Go to overview →'}
-        </span>
+        <span className={styles.sectionCta}>Go to overview →</span>
       </Link>
     </div>
   );

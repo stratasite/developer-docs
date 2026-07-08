@@ -40,7 +40,7 @@ curl -fsSL https://strata.do/server/install.sh | bash
 
 The installer preserves `.env`, updates compose config, pulls the selected image tag, and restarts services. Re-running the installer renames the background service from `worker` to `job` in `docker-compose.yml` (stop the old stack first if you have a running `worker` container).
 
-### Manual Host Deployment (VM / On-Prem)
+### Production Deployment (VM / On-Prem)
 
 1. Set target image tag in `.env`:
 
@@ -71,7 +71,7 @@ curl http://<your-host-or-alb>/up
 
 ## 3. Rollback
 
-### Docker Compose (Quick Install / Manual Host)
+### Docker Compose
 
 1. Set previous `STRATA_VERSION` in `.env`.
 2. Restart:

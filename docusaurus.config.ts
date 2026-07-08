@@ -154,11 +154,6 @@ const config: Config = {
           position: 'left',
           target: '_blank',
         },
-        {
-          to: 'web-ui',
-          label: 'Web UI Guide',
-          position: 'left',
-        },
       ],
     },
     footer: {
@@ -195,15 +190,6 @@ const config: Config = {
             {
               label: 'Environment Variables',
               to: 'self-hosting/environment-variables',
-            },
-          ],
-        },
-        {
-          title: 'Web UI Guide',
-          items: [
-            {
-              label: 'Coming soon',
-              to: 'web-ui',
             },
           ],
         },

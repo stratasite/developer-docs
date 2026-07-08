@@ -1,38 +1,18 @@
-# Manual Host Deployment (VM / On-Prem)
+# Production Deployment
 
-This guide is for organizations that manage their own infrastructure and require direct control over runtime, configuration, and rollout workflows.
+This guide is for teams that require direct control over runtime, configuration, and rollout workflows using raw Docker Compose.
 
-Supported targets include:
+Supported targets:
 
 - Linux VM or instance (AWS EC2, Azure VM, Google Compute Engine, etc.)
 - On-premises Linux server
 - Any Docker-compatible host managed by your operations team
 
-## 0. Generate a `.env` File
+## 1. Prepare PostgreSQL
 
-Generate `.env` with auto-generated Strata secrets:
-
-```bash
-curl -fsSL https://strata.do/self-hosting/env.sh | bash -s -- ./.env
-```
-
-## 1. Authenticate with the Container Registry
-
-Strata is distributed as a private Docker image. Authenticate to the registry where your organization stores the approved Strata image:
-
-```bash
-echo YOUR_REGISTRY_TOKEN | docker login registry.gitlab.com -u YOUR_REGISTRY_USERNAME --password-stdin
-```
-
-## 2. Pull the Image
-
-Use an explicit release tag for production:
-
-```bash
-docker pull registry.gitlab.com/stratado/server:1.0.0
-```
-
-## 3. Prepare PostgreSQL
+:::tip
+For production, use a managed PostgreSQL service (RDS, Cloud SQL, Azure Database) rather than a self-hosted instance.
+:::
 
 Strata uses four PostgreSQL databases:
 
@@ -64,7 +44,15 @@ CREATE DATABASE strata_production_cache OWNER strata;
 CREATE DATABASE strata_production_cable OWNER strata;
 ```
 
-## 4. Create Docker Compose File
+## 2. Pull the Image
+
+Use an explicit release tag for production:
+
+```bash
+docker pull registry.gitlab.com/stratado/server:1.0.0
+```
+
+## 3. Create Docker Compose File
 
 Create a directory for Strata (e.g., `/opt/strata`) and add `docker-compose.yml`:
 
@@ -108,23 +96,23 @@ volumes:
   strata_storage:
 ```
 
-The `web` service handles HTTP and database setup. The `job` service processes background jobs using the same image and shared storage volume.
+## 4. Configure Environment Variables
 
-## 5. Configure Environment Variables
-
-Set the following variables (e.g. in a `.env` file in the same directory, or in your shell/system env). At minimum, you need:
+Create a `.env` file in the same directory. At minimum:
 
 ```bash
-# Required
-LICENSE_KEY=your_license_key_jwt_token
+# Database (required)
 DB_HOST=your-postgres-host
 DB_PORT=5432
 DB_USERNAME=strata
 DB_PASSWORD=your_secure_password
-STRATA_SECRET_KEY_BASE=  # Generate with: openssl rand -hex 64
-STRATA_ENCRYPTION_PRIMARY_KEY=  # Generate with: openssl rand -hex 16
-STRATA_ENCRYPTION_DETERMINISTIC_KEY=  # Generate with: openssl rand -hex 16
-STRATA_ENCRYPTION_KEY_DERIVATION_SALT=  # Generate with: openssl rand -hex 16
+
+# Encryption secrets — auto-generated on first boot for single-node deployments.
+# Must be set explicitly for multi-node: all nodes must share the same values.
+STRATA_SECRET_KEY_BASE=   # openssl rand -hex 64
+STRATA_ENCRYPTION_PRIMARY_KEY=   # openssl rand -hex 16
+STRATA_ENCRYPTION_DETERMINISTIC_KEY=   # openssl rand -hex 16
+STRATA_ENCRYPTION_KEY_DERIVATION_SALT=   # openssl rand -hex 16
 
 # Common in production
 APP_HOST=strata.yourcompany.com
@@ -138,13 +126,13 @@ JOB_THREADS=3
 
 See [Environment Variables](/self-hosting/environment-variables) for the complete reference.
 
-## 6. Start Strata
+## 5. Start Strata
 
 ```bash
 docker compose up -d
 ```
 
-## 7. Verify
+## 6. Verify
 
 Watch the startup logs:
 
@@ -168,9 +156,10 @@ curl http://<your-host-or-ip>:<PORT>/up
 # Expect HTTP 200
 ```
 
-## 8. Create Your Admin Account
+## 7. Activate Your License and Create Your Admin Account
 
-Open the application URL and complete the Setup Wizard to create the first admin account. The setup page is shown only until the first user is created.
+Open the application URL. You'll be prompted to enter your license key first, then create the first admin account.
+You can get your FREE license key at [license.strata.do](https://license.strata.do)
 
 ---
 
@@ -186,32 +175,17 @@ See [SSL & Reverse Proxy](/self-hosting/ssl-reverse-proxy) for full setup instru
 
 For high availability or load balancing across multiple nodes:
 
-### STRATA_SECRET_KEY_BASE
+### Encryption Secrets
 
-All nodes must share the same `STRATA_SECRET_KEY_BASE`. This key encrypts sessions, cookies, and signed tokens. If nodes use different keys, users will be logged out when their request hits another node.
+All nodes must share the same `STRATA_SECRET_KEY_BASE` and Strata encryption keys. If nodes use different values, users will be logged out when their request hits another node, and encrypted data will be unreadable across nodes.
 
-Generate a shared key:
-
-```bash
-openssl rand -hex 64
-```
-
-Set the same `STRATA_SECRET_KEY_BASE` environment variable on every node — via `.env`, your orchestrator's secrets management, or however you configure environment variables:
+Generate shared values once and set them on every node:
 
 ```bash
-STRATA_SECRET_KEY_BASE=your_shared_secret_key_base_value
-```
-
-### Strata Encryption Keys
-
-All nodes must also share the same Strata encryption keys. These keys are required for Strata data-at-rest encryption.
-
-Set the same values on every node:
-
-```bash
-STRATA_ENCRYPTION_PRIMARY_KEY=your_shared_primary_key
-STRATA_ENCRYPTION_DETERMINISTIC_KEY=your_shared_deterministic_key
-STRATA_ENCRYPTION_KEY_DERIVATION_SALT=your_shared_key_derivation_salt
+openssl rand -hex 64   # → STRATA_SECRET_KEY_BASE
+openssl rand -hex 16   # → STRATA_ENCRYPTION_PRIMARY_KEY
+openssl rand -hex 16   # → STRATA_ENCRYPTION_DETERMINISTIC_KEY
+openssl rand -hex 16   # → STRATA_ENCRYPTION_KEY_DERIVATION_SALT
 ```
 
 ### Shared Storage
