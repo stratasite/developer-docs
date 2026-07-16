@@ -44,7 +44,7 @@ Note the ARN of each secret — you'll reference them in Step 3.
 
 ## Step 2: Create an EFS File System
 
-Strata uses EFS for persistent file storage in ECS deployments.
+Strata uses EFS for persistent file storage in ECS deployments. Set `STORAGE_BACKEND=efs` in your environment variables so Strata writes to the mounted EFS volume.
 
 1. Open the **EFS** console → **Create file system**
 2. Enable encryption at rest
@@ -78,6 +78,7 @@ Strata uses EFS for persistent file storage in ECS deployments.
    | `STRATA_RUN_DB_PREPARE` | `true` |
    | `WEB_CONCURRENCY` | `2` |
    | `WEB_THREADS` | `5` |
+   | `STORAGE_BACKEND` | `efs` |
    | `DB_HOST` | Your PostgreSQL host |
    | `DB_PORT` | `5432` |
    | `DB_USERNAME` | Your PostgreSQL username |

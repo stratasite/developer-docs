@@ -78,17 +78,17 @@ Once you have a reverse proxy terminating SSL, set both `ASSUME_SSL=true` and `F
 
 ## Storage
 
-Strata writes uploaded files (attachments, exports) to a storage backend. The default `local` backend writes to the container's filesystem via a Docker volume — this works fine for a single container but **files will be inaccessible if you run multiple web replicas**, because each container has its own volume. Switch to a shared backend (cloud object storage or a shared filesystem) whenever you run more than one web container or need uploads to survive container replacement.
+Strata stores uploaded files (attachments, exports) using the backend set by `STORAGE_BACKEND`. The default is `local` — files are stored on the container's local disk, which works fine for a single container but **files will be inaccessible if you run multiple web replicas**. Switch to a shared backend (EFS, cloud object storage) whenever you run more than one container or need files to survive container replacement.
 
 ### EFS (ECS Deployments)
 
-When an EFS volume is mounted at `/mnt/efs`, Strata automatically detects it and uses it for file storage. No environment variables are needed — just mount the volume. See [AWS ECS Deployment](/self-hosting/aws-ecs-manual#step-2-create-an-efs-file-system) for setup instructions.
+Set `STORAGE_BACKEND=efs` to store files on an EFS volume mounted at `/mnt/efs`. Strata will prepare the storage directory automatically when the volume is present. See [AWS ECS Deployment](/self-hosting/aws-ecs-manual#step-2-create-an-efs-file-system) for mount setup instructions.
 
 ### Common
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `STORAGE_BACKEND` | No | `local` | File storage service: `local` (Docker volume or EFS if mounted at `/mnt/efs`), `amazon` (S3-compatible), `google` (GCS), or `microsoft` (Azure Blob) |
+| `STORAGE_BACKEND` | No | `local` | Where Strata stores uploaded files: `local` (container's local disk — default, single-container only), `efs` (EFS volume at `/mnt/efs`), `amazon` (S3 or S3-compatible), `google` (GCS), or `microsoft` (Azure Blob) |
 
 ### Amazon S3 / S3-Compatible
 
@@ -117,6 +117,12 @@ Set these when `STORAGE_BACKEND=amazon`. Strata uses these credentials to read a
 | `AZURE_STORAGE_ACCOUNT` | Yes | — | Azure storage account name |
 | `AZURE_STORAGE_ACCESS_KEY` | Yes | — | Azure storage access key |
 | `AZURE_STORAGE_CONTAINER` | Yes | — | Azure blob container name |
+
+### Example: EFS
+
+```bash
+STORAGE_BACKEND=efs
+```
 
 ### Example: AWS S3
 
