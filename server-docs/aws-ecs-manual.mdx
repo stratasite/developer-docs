@@ -145,10 +145,8 @@ Background jobs should **not** run inside the web task. Use the **same image** w
    ./bin/jobs
    ```
 
-   (Equivalent to `./bin/rails,solid_queue:start`.)
-
 4. **Remove** the container port mapping — job tasks do not receive HTTP traffic.
-5. Add the same **EFS volume** and mount at `/mnt/efs` (exports and Active Storage may read shared files).
+5. Add the same **EFS volume** and mount at `/mnt/efs` (exports and file storage may read shared files).
 6. **Environment variables** — same `DB_*` and secrets as web, plus:
 
    | Key | Value |

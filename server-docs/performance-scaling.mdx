@@ -6,8 +6,8 @@ This guide helps you size web and job capacity for Strata self-hosted deployment
 
 | Role | Processes | Scales with |
 |------|-----------|-------------|
-| **Web** | Thruster → Puma (`WEB_CONCURRENCY` workers × `WEB_THREADS` threads) | HTTP RPS and latency |
-| **Job** | Solid Queue (`JOB_CONCURRENCY` processes × `JOB_THREADS` each in `config/queue.yml`) | Job backlog and completion time |
+| **Web** | Web server (`WEB_CONCURRENCY` workers × `WEB_THREADS` threads) | HTTP RPS and latency |
+| **Job** | Background job processor (`JOB_CONCURRENCY` processes × `JOB_THREADS` each) | Job backlog and completion time |
 
 Use the **same container image** for both roles. Only the **web** role is exposed to users.
 
@@ -21,7 +21,7 @@ slots = WEB_CONCURRENCY × WEB_THREADS
 
 Example: `WEB_CONCURRENCY=2`, `WEB_THREADS=5` → **10 slots** per container.
 
-For **50–200 RPS** with typical Rails I/O-bound requests:
+For **50–200 RPS** with typical I/O-bound requests:
 
 - Start with **2–4 web replicas** (ECS tasks or Compose scale) at 2×5 slots each.
 - Increase **replica count** before maxing threads (threads raise tail latency due to the Ruby GVL).
@@ -29,7 +29,7 @@ For **50–200 RPS** with typical Rails I/O-bound requests:
 
 ### Postgres connections (web)
 
-Each Puma worker process has its own connection pool per database role. Pool size comes from `config/database.yml`: `DB_POOL_SIZE`, or else `WEB_THREADS` (default **5**).
+Each web worker process has its own connection pool per database role. Pool size comes from `DB_POOL_SIZE`, or else `WEB_THREADS` (default **5**).
 
 ```
 effective_pool = DB_POOL_SIZE ?? WEB_THREADS ?? 5
@@ -52,7 +52,7 @@ Approximate concurrent job execution slots per job container:
 slots = JOB_CONCURRENCY × JOB_THREADS
 ```
 
-Default `JOB_THREADS` is **3** (`config/queue.yml`). Installer default: `JOB_CONCURRENCY=4` → **12 slots**.
+Default `JOB_THREADS` is **3**. Installer default: `JOB_CONCURRENCY=4` → **12 slots**.
 
 Completed jobs per second (rough estimate):
 
@@ -86,13 +86,13 @@ Before scaling to large fleets:
 
 1. **Measure** average and p95 job duration for `query_jobs` and `export_jobs`.
 2. **Measure** HTTP p95 under expected concurrent users (not just `/up`).
-3. **Watch** RDS connections, CPU, and Solid Queue ready execution count.
+3. **Watch** RDS connections, CPU, and job queue depth.
 4. **Confirm** `STRATA_RUN_DB_PREPARE=false` on all job tasks.
 5. **Confirm** production web tasks do not process jobs (run a **job** service; omit `HANDLE_JOBS_IN_WEB_SERVER` on web).
 
 ### Example observability queries
 
-Monitor Solid Queue depth in the queue database (`solid_queue_ready_executions`, `solid_queue_jobs`) and Solid Queue process heartbeats (`solid_queue_processes`).
+Monitor job queue depth in the internal queue database and job processor process heartbeats.
 
 ### Tools
 

@@ -1,0 +1,46 @@
+# Tutorial
+
+Bootstrap the Strata TPC-DS tutorial project on your local machine with a single command.
+
+## Usage
+
+```bash
+strata tutorial -a YOUR_API_KEY
+```
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `-a`, `--api-key` | Yes | Your Strata API key. Find it in the Strata web app on your project page. |
+
+## What it does
+
+1. Clones the [strata-tutorial-project](https://github.com/stratasite/strata-tutorial-project) into a `strata-tutorial-project/` directory in the current working directory.
+2. Initialises a fresh Git repository with an initial commit.
+3. Creates a `.strata` config file (git-ignored) containing your API key and the server URL (`http://localhost:8080`).
+4. Sets the project ID in `project.yml` so you can deploy immediately.
+
+## After running
+
+```bash
+cd strata-tutorial-project
+strata deploy --skip-audit
+```
+
+Then open [http://localhost:8080](http://localhost:8080) in your browser to explore the deployed model.
+
+## Prerequisites
+
+- Strata CLI installed — see [Installation](/developer-guide/getting-started/installation)
+- A running Strata server — see [Quick Install](/self-hosting/quick-install)
+- Git installed
+
+## Notes
+
+- The TPC-DS dataset is bundled inside the Strata Docker image at `/data/tpcds.duckdb` — no separate database setup required.
+- If a `strata-tutorial-project/` directory already exists in the current folder, the command re-uses it and skips cloning.
+- **Why `--skip-audit`?** The tutorial's DuckDB database is bundled inside the Strata Docker image at `/data/tpcds.duckdb`. The CLI runs on your local machine and cannot open that container-internal path, so the pre-deploy datasource connection check would fail even though the Strata server itself connects to it just fine. `--skip-audit` bypasses that local connection check. Use it only for this tutorial setup — for your own projects omit the flag so the CLI validates datasource connections before they reach the server.
+
+## Next steps
+
+- [Tutorial walkthrough](/developer-guide/getting-started/tutorial) — build on the tutorial model by adding the missing web channel tables
+- [CLI Reference](/developer-guide/cli) — all Strata CLI commands

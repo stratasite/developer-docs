@@ -183,14 +183,13 @@ AZURE_STORAGE_CONTAINER=strata-uploads
 | `JOB_THREADS` | No | `3` | **Threads** per job process. Job capacity ≈ `JOB_CONCURRENCY × JOB_THREADS`. |
 | `STRATA_RUN_DB_PREPARE` | No | `true` | Must be `false` on the `job` service. |
 
-### Database connection pool (`database.yml`)
+### Database connection pool
 
 Each worker process in the `web` and `job` containers has its **own** database connection pool. The pool size is resolved at boot:
 
 1. `DB_POOL_SIZE` — optional override (advanced)
 2. else `WEB_THREADS`
-3. else `RAILS_MAX_THREADS` (Rails convention, rarely needed)
-4. else `5`
+3. else `5`
 
 **Rule of thumb:** leave `DB_POOL_SIZE` unset and set only `WEB_THREADS` on **web**. Pool should match threads per process (`pool` ≥ concurrent request threads in that process). Set `DB_POOL_SIZE` explicitly only after profiling (never lower than thread count).
 

@@ -1,6 +1,28 @@
 # Tutorial: TPC-DS with DuckDB
 
-This tutorial walks you through building a semantic model for the TPC-DS benchmark using **DuckDB** on your local machine. You will clone the Strata TPC-DS tutorial repository, connect it to a local DuckDB database, and complete the model by adding the missing web channel tables and relationships. No cloud database or hosting is required.
+This tutorial walks you through building a semantic model for the TPC-DS benchmark using **DuckDB**. You will set up the Strata TPC-DS tutorial project, connect it to a DuckDB database, and complete the model by adding the missing web channel tables and relationships. No cloud database or hosting is required.
+
+## Quick Start (Recommended)
+
+If you have a Strata server running locally (see [Quick Install](/self-hosting/quick-install)), the fastest way to get started is:
+
+```bash
+strata tutorial -a YOUR_API_KEY
+cd strata-tutorial-project
+strata deploy --skip-audit
+```
+
+`--skip-audit` skips the pre-deploy datasource connection check. The tutorial's DuckDB database is bundled **inside the Strata Docker image** at `/data/tpcds.duckdb` — the server can reach it, but the CLI running on your local machine cannot find that path and would fail the connection check before ever sending anything to the server. Skipping it is safe here; for your own projects, leave the flag off so the CLI catches connection issues early.
+
+The TPC-DS dataset is bundled in the Strata Docker image — no separate database setup needed. Find your API key on your project page in the Strata web app.
+
+Open [http://localhost:8080](http://localhost:8080) to explore the deployed model, then return here to complete the learning exercise (adding the missing web channel tables).
+
+---
+
+## Manual Setup
+
+Use the steps below if you want to understand the internals, use your own DuckDB file, or connect to a remote Strata server.
 
 ## Overview
 
@@ -138,7 +160,7 @@ Before adding your own tables, let's deploy the existing model to your Strata se
 server: https://your-strata-server.com
 ```
 
-Replace `https://your-strata-server.com` with the URL of your Strata server (e.g. `http://localhost:3000` for a local instance). The tpcds-tutorial repo includes `server: http://localhost:3000` by default; change it if your server runs elsewhere.
+Replace `https://your-strata-server.com` with the URL of your Strata server (e.g. `http://localhost:8080` for a local instance). The tpcds-tutorial repo includes `server: http://localhost:8080` by default; change it if your server runs elsewhere.
 
 **API key** — Store your Strata API key in **`.strata`** (gitignored). Create `.strata` if it doesn't exist and add:
 
@@ -184,7 +206,7 @@ The TPC-DS benchmark includes a **web channel**: fact tables `web_sales` and `we
 
 ### 7a. Add the Web Site Dimension Table
 
-Use the CLI to scaffold the table from the database:
+Use the CLI to create the table from the database:
 
 ```bash
 strata create table web/web_site
@@ -346,7 +368,7 @@ fields:
 
 ### 7b. Add the Web Page Dimension Table
 
-Use the CLI to scaffold the table:
+Use the CLI to create the table:
 
 ```bash
 strata create table web/web_page
@@ -436,7 +458,7 @@ fields:
 
 ### 7c. Add the Promotion Dimension Table
 
-Use the CLI to scaffold the table:
+Use the CLI to create the table:
 
 ```bash
 strata create table web/promotion
@@ -574,7 +596,7 @@ fields:
 
 ### 7d. Add the Web Sales Fact Table
 
-Use the CLI to scaffold the fact table:
+Use the CLI to create the fact table:
 
 ```bash
 strata create table web/web_sales
@@ -719,7 +741,7 @@ fields:
 
 ### 7e. Add the Web Returns Fact Table
 
-Use the CLI to scaffold the fact table:
+Use the CLI to create the fact table:
 
 ```bash
 strata create table web/web_returns
@@ -822,7 +844,7 @@ fields:
 
 ## Step 8: Add Relationships for the Web Channel
 
-Use the CLI to scaffold a relationship file:
+Use the CLI to create a relationship file:
 
 ```bash
 strata create relation web/web
