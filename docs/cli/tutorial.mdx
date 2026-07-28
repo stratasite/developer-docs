@@ -14,7 +14,7 @@ strata tutorial -a YOUR_API_KEY
 
 ## What it does
 
-1. Clones the [strata-tutorial-project](https://github.com/stratasite/strata-tutorial-project) into a `strata-tutorial-project/` directory in the current working directory.
+1. Clones the [tpc-ds-retail-sample](https://github.com/stratasite/tpc-ds-retail-sample) into a `tpc-ds-retail-sample/` directory in the current working directory.
 2. Initialises a fresh Git repository with an initial commit.
 3. Creates a `.strata` config file (git-ignored) containing your API key and the server URL (`http://localhost:8080`).
 4. Sets the project ID in `project.yml` so you can deploy immediately.
@@ -22,8 +22,8 @@ strata tutorial -a YOUR_API_KEY
 ## After running
 
 ```bash
-cd strata-tutorial-project
-strata deploy --skip-audit
+cd tpc-ds-retail-sample
+strata deploy
 ```
 
 Then open [http://localhost:8080](http://localhost:8080) in your browser to explore the deployed model.
@@ -37,8 +37,7 @@ Then open [http://localhost:8080](http://localhost:8080) in your browser to expl
 ## Notes
 
 - The TPC-DS dataset is bundled inside the Strata Docker image at `/data/tpcds.duckdb` — no separate database setup required.
-- If a `strata-tutorial-project/` directory already exists in the current folder, the command re-uses it and skips cloning.
-- **Why `--skip-audit`?** The tutorial's DuckDB database is bundled inside the Strata Docker image at `/data/tpcds.duckdb`. The CLI runs on your local machine and cannot open that container-internal path, so the pre-deploy datasource connection check would fail even though the Strata server itself connects to it just fine. `--skip-audit` bypasses that local connection check. Use it only for this tutorial setup — for your own projects omit the flag so the CLI validates datasource connections before they reach the server.
+- If a `tpc-ds-retail-sample/` directory already exists in the current folder, the command re-uses it and skips cloning.
 
 ## Next steps
 
