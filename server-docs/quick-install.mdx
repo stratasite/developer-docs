@@ -13,7 +13,7 @@ Get Strata running in minutes — no prior setup required.
 One command. No configuration needed.
 
 ```bash
-docker run -d -p 8080:80 -v strata_data:/data --name strata registry.gitlab.com/stratado/server:latest
+docker run -d -p 8080:80 -v strata_data:/data --name strata ghcr.io/stratasite/server:latest
 ```
 
 Strata starts a bundled PostgreSQL instance and auto-generates encryption secrets on first boot. Both are persisted to the `strata_data` volume.

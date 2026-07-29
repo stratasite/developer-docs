@@ -49,7 +49,7 @@ CREATE DATABASE strata_production_cable OWNER strata;
 Use an explicit release tag for production:
 
 ```bash
-docker pull registry.gitlab.com/stratado/server:1.0.0
+docker pull ghcr.io/stratasite/server:1.0.0
 ```
 
 ## 3. Create Docker Compose File
@@ -60,7 +60,7 @@ Create a directory for Strata (e.g., `/opt/strata`) and add `docker-compose.yml`
 # docker-compose.yml
 services:
   web:
-    image: registry.gitlab.com/stratado/server:${STRATA_VERSION:-latest}
+    image: ghcr.io/stratasite/server:${STRATA_VERSION:-latest}
     ports:
       - "${PORT:-3000}:${STRATA_CONTAINER_PORT:-80}"
     env_file: .env
@@ -77,7 +77,7 @@ services:
       start_period: 120s
 
   job:
-    image: registry.gitlab.com/stratado/server:${STRATA_VERSION:-latest}
+    image: ghcr.io/stratasite/server:${STRATA_VERSION:-latest}
     env_file: .env
     environment:
       STRATA_RUN_DB_PREPARE: "false"
