@@ -80,6 +80,8 @@ const sidebars: SidebarsConfig = {
               items: [
                 'semantic-model/fields/measures/compound',
                 'semantic-model/fields/measures/snapshot',
+                'advanced/exclusions',
+                'advanced/inclusions',
               ],
             },
             'semantic-model/fields/data-types',
@@ -114,8 +116,7 @@ const sidebars: SidebarsConfig = {
             'advanced/universe-formation',
             'advanced/semantic-routing',
             'advanced/extended-blending-groups',
-            'advanced/exclusions',
-            'advanced/inclusions',
+
             'advanced/partitions',
             'advanced/cost-optimization',
             {
