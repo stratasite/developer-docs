@@ -1,8 +1,12 @@
-# Google OAuth for Sheets Exports
+# Google Sheets Export
 
 Strata can export reports to Google Sheets after your organization configures a Google OAuth application and each exporting user connects their Google account.
 
 This setup is required once per Strata server. Users then authorize Strata with their own Google account before running a Sheets export.
+
+:::note
+This is a **Sheets export integration, not a sign-in method**. It authorizes Strata to write to a user's Google Sheets — it does not let users log in with Google. To configure login, see [Authentication & SSO](/self-hosting/authentication) (Google works as an [OpenID Connect](/self-hosting/authentication/oidc) provider).
+:::
 
 ## What Strata Uses
 

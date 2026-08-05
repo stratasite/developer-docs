@@ -14,6 +14,17 @@ const sidebars: SidebarsConfig = {
     'ssl-reverse-proxy',
     'environment-variables',
     'google-oauth',
+    {
+      type: 'category',
+      label: 'Authentication & SSO',
+      link: { type: 'doc', id: 'authentication/index' },
+      items: [
+        'authentication/saml',
+        'authentication/oidc',
+        'authentication/jwt',
+        'authentication/reverse-proxy',
+      ],
+    },
     'upgrading',
     'security-hardening',
     'troubleshooting-deployments',
