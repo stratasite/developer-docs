@@ -29,6 +29,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'cli/projects',
         'cli/datasources',
+        'cli/building-your-model',
         'cli/tables',
         'cli/relationships',
         'cli/migrations',

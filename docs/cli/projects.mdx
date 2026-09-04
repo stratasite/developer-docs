@@ -29,13 +29,17 @@ strata init my-project
 
 ```
 my-project/
+├── AGENTS.md            # Rules a coding agent follows to build the model
 ├── project.yml          # Project configuration
 ├── datasources.yml      # Datasource definitions
+├── security.yml         # Security policies
 ├── .strata              # Local secrets (gitignored)
 ├── models/              # Semantic model files
 ├── migrations/          # Migration files
 └── tests/               # Test definitions
 ```
+
+The CLI also initializes a git repository and makes an initial commit of these files. `AGENTS.md` is committed with them — it is what lets a coding agent build the semantic model for you. See [Building Your Model](/developer-guide/cli/building-your-model).
 
 **With datasource adapters:** You can add one or more datasource adapters during initialization:
 
@@ -80,5 +84,6 @@ The `project_id` is added automatically after your first deployment.
 ## Next Steps
 
 - [Managing Datasources](/developer-guide/cli/datasources) - Add and configure datasources
+- [Building Your Model](/developer-guide/cli/building-your-model) - Author models yourself or with a coding agent
 - [Creating Tables](/developer-guide/cli/tables) - Create semantic table models
 - [Deployment](/developer-guide/cli/deployment) - Deploy to the Strata server
