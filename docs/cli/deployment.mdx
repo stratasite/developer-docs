@@ -38,9 +38,10 @@ This treats your semantic layer as **infrastructure as code** — the same rigor
 
 - Strata project initialized
 - Semantic models defined
-- Strata server URL configured in `project.yml`
-- API key configured (in `.strata` file) — get it from your Strata web app (e.g. **Settings → API Keys**) or from your Strata administrator
+- A Strata account on the target server
 - Git repository initialized (for version tracking)
+
+You do **not** need to configure a server URL or API key up front. If either is missing, `strata deploy` prompts for the server URL (saved to `project.yml`) and then asks how you'd like to authenticate: **Sign in via browser (recommended)** — the CLI opens your browser and fetches an API key automatically once you sign in — or paste an API key manually (from your Strata web app under **Settings → API Keys**, or from your Strata administrator). Either way the key is saved to `.strata` (gitignored) for future runs.
 
 ## Basic Deployment
 
@@ -196,7 +197,7 @@ project_id: 123  # Auto-populated after first deployment
 
 ### .strata (Local Secrets Only)
 
-Store your Strata **API key** and other secrets in `.strata` (gitignored). **Do not put the server URL here** — the server URL belongs in `project.yml` (see above). Get the API key from your Strata web app: open your project, go to **Settings → API Keys**, and create or copy a key. The CLI uses it when you run `strata deploy`.
+Your Strata **API key** and other secrets live in `.strata` (gitignored). The browser sign-in flow writes this file for you the first time you run `strata deploy`, so you normally never edit it by hand. Manual editing is mainly for non-interactive environments (CI) or per-environment keys: get a key from your Strata web app (**Settings → API Keys**) and add it as below. **Do not put the server URL here** — the server URL belongs in `project.yml` (see above).
 
 ```yaml
 api_key: your_api_key_here
@@ -281,7 +282,7 @@ If the deployment fails partway through for any reason (transient error, server 
 
 **Solution:**
 - Verify `project.yml` server URL
-- Check API key in `.strata`
+- Re-authenticate: remove the `api_key` line from `.strata` and run `strata deploy` — it will offer browser sign-in again. (A placeholder value of `YOUR_STRATA_API_KEY` is treated as no key.)
 - Test network connection
 
 ## CI/CD Integration

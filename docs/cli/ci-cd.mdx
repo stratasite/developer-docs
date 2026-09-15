@@ -18,6 +18,10 @@ CI/CD automates the deployment of your semantic models, ensuring:
 - **Speed** - Deploy without manual steps
 - **Safety** - Run audits and tests automatically
 
+:::note
+The interactive browser sign-in that `strata deploy` offers locally does not work in CI — there is no browser or TTY. Write the API key into the `.strata` file from a CI secret instead, as shown below.
+:::
+
 ## Basic CI/CD Setup
 
 ### GitHub Actions Example
@@ -46,7 +50,6 @@ jobs:
       
       - name: Configure API Key
         run: |
-          mkdir -p .strata
           echo "api_key: ${{ secrets.STRATA_API_KEY }}" > .strata
       
       - name: Deploy
@@ -115,7 +118,6 @@ strata deploy --yes --environment production
 ```yaml
 - name: Configure API Key
   run: |
-    mkdir -p .strata
     echo "api_key: ${{ secrets.STRATA_API_KEY }}" > .strata
 ```
 
@@ -140,7 +142,6 @@ For multiple environments:
 ```yaml
 - name: Configure API Keys
   run: |
-    mkdir -p .strata
     cat > .strata << EOF
     api_key: ${{ secrets.STRATA_API_KEY }}
     environments:
@@ -185,7 +186,6 @@ jobs:
       - run: gem install strata-cli
       - name: Configure API Key
         run: |
-          mkdir -p .strata
           echo "api_key: ${{ secrets.STRATA_API_KEY }}" > .strata
       - name: Deploy
         run: strata deploy --yes
@@ -213,7 +213,6 @@ jobs:
       - run: gem install strata-cli
       - name: Configure API Key
         run: |
-          mkdir -p .strata
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
             ENV="production"
           else

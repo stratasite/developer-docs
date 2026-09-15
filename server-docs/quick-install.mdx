@@ -23,6 +23,8 @@ The `-v strata_data:/data` flag is optional — omitting it lets Docker manage t
 Open [http://localhost:8080](http://localhost:8080), enter your license key, then create your admin account.
 You can get your FREE license key at [license.strata.do](https://license.strata.do)
 
+Your server is now running — see [Next Steps](#next-steps) to deploy your first semantic model.
+
 :::caution Bundled database
 The bundled Postgres is for local evaluation. For persistent production data, use a dedicated PostgreSQL instance — see the [Production Deployment](/self-hosting/production-deployment) guide.
 :::
@@ -69,6 +71,8 @@ STRATA_INSTALL_DIR=/opt/strata curl -fsSL https://strata.do/server/install.sh | 
 After setup, open `http://<your-host>:<PORT>`, enter your license key, then create your admin account.
 You can get your FREE license key at [license.strata.do](https://license.strata.do)
 
+Your server is now running — see [Next Steps](#next-steps) to deploy your first semantic model.
+
 ### Managing Strata
 
 ```bash
@@ -96,6 +100,16 @@ curl -fsSL https://strata.do/server/install.sh | bash
 </Tabs>
 
 ---
+
+## Next Steps
+
+With the server running and your admin account created, put a semantic model on it:
+
+1. [Install the Strata CLI](/developer-guide/getting-started/installation) — `gem install strata-cli`
+2. Run `strata project sample` — it signs you in via browser and sets up the TPC-DS tutorial project
+3. `cd tpc-ds-retail-sample && strata deploy --skip-audit`, then refresh your server UI to explore the model
+
+See the [Tutorial](/developer-guide/getting-started/tutorial) for the full walkthrough, or [Quick Start](/developer-guide/getting-started/quickstart) to start a project from scratch.
 
 ## Advanced
 
