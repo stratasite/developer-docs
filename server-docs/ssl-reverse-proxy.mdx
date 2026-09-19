@@ -49,9 +49,11 @@ This is the most common approach. Your proxy handles HTTPS and forwards plain HT
 ```bash
 ASSUME_SSL=true
 FORCE_SSL=true
-APP_HOST=strata.yourcompany.com
-APP_PROTOCOL=https
 ```
+
+Set your public URL (e.g. `https://strata.yourcompany.com`) in **Settings → General** —
+Strata detects it automatically from the first signed-in visit, and `ASSUME_SSL=true`
+ensures the detected protocol is `https` behind your proxy.
 
 ### Proxy and certificate setup (external docs)
 
@@ -76,7 +78,6 @@ If you're evaluating Strata or running it on a trusted internal network without 
 ```bash
 ASSUME_SSL=false
 FORCE_SSL=false
-APP_PROTOCOL=http
 ```
 
 The install script defaults to these values for quick evaluation setups.
@@ -95,7 +96,7 @@ Your proxy sends requests over HTTP, but `FORCE_SSL=true` tells Strata to redire
 
 The browser loads the page over HTTPS but some resources (CSS, JS, WebSocket) use HTTP URLs.
 
-**Fix:** Set `APP_PROTOCOL=https` and `ASSUME_SSL=true`. Strata uses these to generate correct HTTPS URLs.
+**Fix:** Set `ASSUME_SSL=true` so Strata trusts the proxy's `X-Forwarded-Proto: https` header and generates `https` URLs. Confirm the public URL in **Settings → General** uses `https`.
 
 ### WebSocket connection fails
 

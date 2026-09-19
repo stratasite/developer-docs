@@ -55,13 +55,18 @@ The license key is entered via the web UI on first login and stored in the datab
 |----------|----------|---------|-------------|
 | `PORT` | No | `3000` | Host port for the web UI (mapped to container `STRATA_CONTAINER_PORT`) |
 | `STRATA_CONTAINER_PORT` | No | `80` | Container HTTP listen port for Strata runtime. Set to `8080` on ECS Fargate — non-root containers cannot bind to ports below 1024. |
-| `APP_HOST` | No | `localhost` | Application hostname, used in email links and URL generation |
-| `APP_PROTOCOL` | No | `https` | Protocol for generated URLs (`http` or `https`) |
 | `STRATA_SECRET_KEY_BASE` | Yes | Auto-generated on first boot (single-node only) | Strata application secret for encrypting sessions, cookies, and signed tokens. All nodes must share the same value in [multi-node deployments](/self-hosting/production-deployment#multi-instance-deployment). Generate with `openssl rand -hex 64`. |
 | `STRATA_ENCRYPTION_PRIMARY_KEY` | Yes | Auto-generated on first boot (single-node only) | Primary key used for Strata data-at-rest encryption (for example datasource credentials). Generate with `openssl rand -hex 16`. |
 | `STRATA_ENCRYPTION_DETERMINISTIC_KEY` | Yes | Auto-generated on first boot (single-node only) | Deterministic key used by Strata encryption for deterministic encrypted attributes. Generate with `openssl rand -hex 16`. |
 | `STRATA_ENCRYPTION_KEY_DERIVATION_SALT` | Yes | Auto-generated on first boot (single-node only) | Salt used by Strata encryption key derivation. Generate with `openssl rand -hex 16`. |
 | `STRATA_VERSION` | No | `latest` | Docker image tag to use. Set to a specific version (e.g., `1.0.0`) to pin releases. |
+
+:::note
+The application's public URL — used for links in emails and for SSO/OAuth callbacks — is
+not an environment variable. Strata detects it automatically from the first signed-in page
+view, and you can edit it any time in **Settings → General**. Behind an SSL-terminating
+proxy, also set `ASSUME_SSL=true` (see below) so those links use `https`.
+:::
 
 ## SSL
 
@@ -88,7 +93,7 @@ Set `STORAGE_BACKEND=efs` to store files on an EFS volume mounted at `/mnt/efs`.
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `STORAGE_BACKEND` | No | `local` | Where Strata stores uploaded files: `local` (container's local disk — default, single-container only), `efs` (EFS volume at `/mnt/efs`), `amazon` (S3 or S3-compatible), `google` (GCS), or `microsoft` (Azure Blob) |
+| `STORAGE_BACKEND` | No | `local` | Where Strata stores uploaded files: `local` (container's local disk — default, single-container only), `efs` (EFS volume at `/mnt/efs`), `amazon` (S3 or S3-compatible), or `google` (GCS) |
 
 ### Amazon S3 / S3-Compatible
 
@@ -109,14 +114,6 @@ Set these when `STORAGE_BACKEND=amazon`. Strata uses these credentials to read a
 | `GCS_PROJECT` | Yes | — | Google Cloud project ID |
 | `GCS_CREDENTIALS` | Yes | — | Service account JSON key (inline JSON string or file path) |
 | `GCS_BUCKET` | Yes | — | GCS bucket name |
-
-### Azure Blob Storage
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `AZURE_STORAGE_ACCOUNT` | Yes | — | Azure storage account name |
-| `AZURE_STORAGE_ACCESS_KEY` | Yes | — | Azure storage access key |
-| `AZURE_STORAGE_CONTAINER` | Yes | — | Azure blob container name |
 
 ### Example: EFS
 
@@ -152,15 +149,6 @@ STORAGE_BACKEND=google
 GCS_PROJECT=my-gcp-project
 GCS_CREDENTIALS=/path/to/service-account.json
 GCS_BUCKET=strata-uploads
-```
-
-### Example: Azure Blob Storage
-
-```bash
-STORAGE_BACKEND=microsoft
-AZURE_STORAGE_ACCOUNT=stratastorage
-AZURE_STORAGE_ACCESS_KEY=your_access_key
-AZURE_STORAGE_CONTAINER=strata-uploads
 ```
 
 ## Performance

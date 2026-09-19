@@ -34,13 +34,15 @@ This creates a `.env` file with all encryption secrets pre-generated. Create a s
 | Secret name | Value |
 |---|---|
 | `DB_PASSWORD` | Your PostgreSQL password |
-| `LICENSE_KEY` | Your Strata license key |
 | `STRATA_SECRET_KEY_BASE` | From generated `.env` |
 | `STRATA_ENCRYPTION_PRIMARY_KEY` | From generated `.env` |
 | `STRATA_ENCRYPTION_DETERMINISTIC_KEY` | From generated `.env` |
 | `STRATA_ENCRYPTION_KEY_DERIVATION_SALT` | From generated `.env` |
 
 Note the ARN of each secret — you'll reference them in Step 3.
+
+Your Strata license is not an environment variable — you enter it on the setup screen the
+first time you open the app, or later under **Settings → License**.
 
 ## Step 2: Create an EFS File System
 
@@ -88,7 +90,6 @@ Strata uses EFS for persistent file storage in ECS deployments. Set `STORAGE_BAC
    | Key | Value (secret ARN) |
    |---|---|
    | `DB_PASSWORD` | ARN of your DB_PASSWORD secret |
-   | `LICENSE_KEY` | ARN of your LICENSE_KEY secret |
    | `STRATA_SECRET_KEY_BASE` | ARN of your STRATA_SECRET_KEY_BASE secret |
    | `STRATA_ENCRYPTION_PRIMARY_KEY` | ARN of your STRATA_ENCRYPTION_PRIMARY_KEY secret |
    | `STRATA_ENCRYPTION_DETERMINISTIC_KEY` | ARN of your STRATA_ENCRYPTION_DETERMINISTIC_KEY secret |
