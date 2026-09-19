@@ -113,8 +113,9 @@ STRATA_ENCRYPTION_DETERMINISTIC_KEY=   # openssl rand -hex 16
 STRATA_ENCRYPTION_KEY_DERIVATION_SALT=   # openssl rand -hex 16
 
 # Common in production
-APP_HOST=strata.yourcompany.com
-APP_PROTOCOL=https
+# The public URL (for email links and SSO callbacks) is not set here — Strata
+# detects it from the first signed-in visit and it's editable in Settings → General.
+ASSUME_SSL=true   # behind an SSL-terminating proxy, so links use https
 STRATA_LOG_LEVEL=info
 WEB_CONCURRENCY=2
 WEB_THREADS=5

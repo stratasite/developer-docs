@@ -34,7 +34,7 @@ Google classifies the full Drive scope as a restricted scope. For an app used on
 - You can administer a Google Cloud project owned by your organization.
 - You know the public Strata URL that users open in their browser.
 - Strata is reachable over the same protocol and host you will register with Google, for example `https://strata.example.com`.
-- Your Strata server's `APP_HOST` and `APP_PROTOCOL` match the public URL users use to access Strata.
+- The public URL in **Settings → General** matches the URL users use to access Strata.
 
 The OAuth callback URL must be:
 
@@ -179,7 +179,7 @@ Check that the OAuth client includes the exact callback URL:
 https://YOUR_STRATA_HOST/integrations/google/callback
 ```
 
-Also confirm `APP_HOST`, `APP_PROTOCOL`, your reverse proxy, and the browser URL all agree on the same public host and protocol.
+Also confirm the public URL in **Settings → General**, your reverse proxy, and the browser URL all agree on the same public host and protocol.
 
 ### Users see an unverified app warning
 

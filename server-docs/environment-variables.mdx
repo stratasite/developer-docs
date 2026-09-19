@@ -55,13 +55,18 @@ The license key is entered via the web UI on first login and stored in the datab
 |----------|----------|---------|-------------|
 | `PORT` | No | `3000` | Host port for the web UI (mapped to container `STRATA_CONTAINER_PORT`) |
 | `STRATA_CONTAINER_PORT` | No | `80` | Container HTTP listen port for Strata runtime. Set to `8080` on ECS Fargate — non-root containers cannot bind to ports below 1024. |
-| `APP_HOST` | No | `localhost` | Application hostname, used in email links and URL generation |
-| `APP_PROTOCOL` | No | `https` | Protocol for generated URLs (`http` or `https`) |
 | `STRATA_SECRET_KEY_BASE` | Yes | Auto-generated on first boot (single-node only) | Strata application secret for encrypting sessions, cookies, and signed tokens. All nodes must share the same value in [multi-node deployments](/self-hosting/production-deployment#multi-instance-deployment). Generate with `openssl rand -hex 64`. |
 | `STRATA_ENCRYPTION_PRIMARY_KEY` | Yes | Auto-generated on first boot (single-node only) | Primary key used for Strata data-at-rest encryption (for example datasource credentials). Generate with `openssl rand -hex 16`. |
 | `STRATA_ENCRYPTION_DETERMINISTIC_KEY` | Yes | Auto-generated on first boot (single-node only) | Deterministic key used by Strata encryption for deterministic encrypted attributes. Generate with `openssl rand -hex 16`. |
 | `STRATA_ENCRYPTION_KEY_DERIVATION_SALT` | Yes | Auto-generated on first boot (single-node only) | Salt used by Strata encryption key derivation. Generate with `openssl rand -hex 16`. |
 | `STRATA_VERSION` | No | `latest` | Docker image tag to use. Set to a specific version (e.g., `1.0.0`) to pin releases. |
+
+:::note
+The application's public URL — used for links in emails and for SSO/OAuth callbacks — is
+not an environment variable. Strata detects it automatically from the first signed-in page
+view, and you can edit it any time in **Settings → General**. Behind an SSL-terminating
+proxy, also set `ASSUME_SSL=true` (see below) so those links use `https`.
+:::
 
 ## SSL
 
