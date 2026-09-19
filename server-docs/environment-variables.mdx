@@ -93,7 +93,7 @@ Set `STORAGE_BACKEND=efs` to store files on an EFS volume mounted at `/mnt/efs`.
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `STORAGE_BACKEND` | No | `local` | Where Strata stores uploaded files: `local` (container's local disk — default, single-container only), `efs` (EFS volume at `/mnt/efs`), `amazon` (S3 or S3-compatible), `google` (GCS), or `microsoft` (Azure Blob) |
+| `STORAGE_BACKEND` | No | `local` | Where Strata stores uploaded files: `local` (container's local disk — default, single-container only), `efs` (EFS volume at `/mnt/efs`), `amazon` (S3 or S3-compatible), or `google` (GCS) |
 
 ### Amazon S3 / S3-Compatible
 
@@ -114,14 +114,6 @@ Set these when `STORAGE_BACKEND=amazon`. Strata uses these credentials to read a
 | `GCS_PROJECT` | Yes | — | Google Cloud project ID |
 | `GCS_CREDENTIALS` | Yes | — | Service account JSON key (inline JSON string or file path) |
 | `GCS_BUCKET` | Yes | — | GCS bucket name |
-
-### Azure Blob Storage
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `AZURE_STORAGE_ACCOUNT` | Yes | — | Azure storage account name |
-| `AZURE_STORAGE_ACCESS_KEY` | Yes | — | Azure storage access key |
-| `AZURE_STORAGE_CONTAINER` | Yes | — | Azure blob container name |
 
 ### Example: EFS
 
@@ -157,15 +149,6 @@ STORAGE_BACKEND=google
 GCS_PROJECT=my-gcp-project
 GCS_CREDENTIALS=/path/to/service-account.json
 GCS_BUCKET=strata-uploads
-```
-
-### Example: Azure Blob Storage
-
-```bash
-STORAGE_BACKEND=microsoft
-AZURE_STORAGE_ACCOUNT=stratastorage
-AZURE_STORAGE_ACCESS_KEY=your_access_key
-AZURE_STORAGE_CONTAINER=strata-uploads
 ```
 
 ## Performance
